@@ -1,36 +1,21 @@
 """ 
-    reading tabular files into Tables; nothing here knows about classmarks.
-    CSV/TSV and markdown pipe tables are understood, and the first row names the columns
+    reading a mark sheet into a Table.
+
+    CSV, TSV and markdown pipe tables are understood, and the first row names
+    the columns. cells are taken exactly as they are written, so a name like
+    "Smith;John" stays one value
 """
-import ast
 import csv
 import os
 import re
 
 from .table import Table
 
-# the character that separates several values inside one cell
-VALUE_DELIMITER = ";"
-
-# reusuable function for reading a cell that can hold more than one value
-def cell_to_list(cellValue, delimiter=VALUE_DELIMITER):
+# reading one cell; only splits when a caller asks for a separator
+def cell_to_list(cellValue, delimiter=None):
     cellValue = cellValue.strip()
     if not cellValue:
         return []
-
-    """ 
-        older files hold several values as a python list instead of a delimited cell;
-        literal_eval only understands plain literals, so a file can never run code
-    """
-    if cellValue.startswith("[") and cellValue.endswith("]"):
-        try:
-            parsedValue = ast.literal_eval(cellValue)
-        except (ValueError, SyntaxError):
-            return [cellValue]
-        if isinstance(parsedValue, list):
-            return [str(value).strip() for value in parsedValue if str(value).strip()]
-        return [str(parsedValue)]
-
     if delimiter and delimiter in cellValue:
         return [part.strip() for part in cellValue.split(delimiter) if part.strip()]
     return [cellValue]
@@ -86,7 +71,7 @@ READERS = {
 }
 
 # reading any supported file into a Table
-def load_table(filePath, name=None, delimiter=VALUE_DELIMITER):
+def load_table(filePath, name=None, delimiter=None):
     suffix = os.path.splitext(filePath)[1].lower()
     reader = READERS.get(suffix)
     if reader is None:

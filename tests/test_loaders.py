@@ -1,5 +1,5 @@
 """ 
-    checks on the generic file reading, so a change in stage 3 can't quietly break it
+    checks on the file reading behind an uploaded mark sheet
 
     run it with: python3 tests/test_loaders.py
 """
@@ -9,8 +9,8 @@ import tempfile
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-from engine import loaders
-from engine.table import Table
+from marks import loaders
+from marks.table import Table
 
 CHECKS = []
 
@@ -31,19 +31,15 @@ def temp_file(suffix, contents):
 def _():
     assert loaders.cell_to_list("HF") == ["HF"]
 
-@check("a cell holding several values, separated")
+@check("a cell is taken exactly as written, so a name with a semicolon survives")
 def _():
-    assert loaders.cell_to_list("E;F") == ["E", "F"]
-    assert loaders.cell_to_list(" E ; F ") == ["E", "F"]
+    assert loaders.cell_to_list("Smith;John") == ["Smith;John"]
+    assert loaders.cell_to_list("['E', 'F']") == ["['E', 'F']"]
 
-@check("a cell holding several values, older python-list format")
+@check("a cell is only split when a separator is asked for")
 def _():
-    assert loaders.cell_to_list("['E', 'F']") == ["E", "F"]
-
-@check("a cell that only looks like a list is left alone")
-def _():
-    assert loaders.cell_to_list("[not a list") == ["[not a list"]
-    assert loaders.cell_to_list("[1 +]") == ["[1 +]"]
+    assert loaders.cell_to_list("E;F", delimiter=";") == ["E", "F"]
+    assert loaders.cell_to_list(" E ; F ", delimiter=";") == ["E", "F"]
 
 @check("an empty cell holds nothing")
 def _():
@@ -53,6 +49,11 @@ def _():
 @check("a cell can never run code")
 def _():
     assert loaders.cell_to_list("[__import__('os').getcwd()]") == ["[__import__('os').getcwd()]"]
+
+@check("a mark sheet's cells are never split by default")
+def _():
+    path = temp_file(".csv", "name,Maths\nSmith;John,72\n")
+    assert loaders.load_table(path).rows == [{"name": ["Smith;John"], "Maths": ["72"]}]
 
 @check("CSV: first row names the columns")
 def _():
