@@ -8,7 +8,7 @@ import subprocess
 import sys
 
 TESTS_DIR = os.path.dirname(os.path.abspath(__file__))
-SUITES = ["golden_cli.py", "test_loaders.py", "test_config.py", "test_traverse.py", "test_web.py"]
+SUITES = ["golden_cli.py", "test_loaders.py", "test_config.py", "test_traverse.py", "test_web.py", "test_marks.py"]
 
 if __name__ == '__main__':
     failed = []
