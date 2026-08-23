@@ -1,9 +1,9 @@
 """ 
     reading a mark sheet into a Table.
 
-    CSV, TSV and markdown pipe tables are understood, and the first row names
-    the columns. cells are taken exactly as they are written, so a name like
-    "Smith;John" stays one value
+    CSV, TSV, Excel and markdown pipe tables are understood, and the first row
+    names the columns. cells are taken exactly as they are written, so a name
+    like "Smith;John" stays one value
 """
 import csv
 import os
@@ -28,6 +28,57 @@ def read_delimited(filePath):
     if not allRows:
         return [], []
     return [column.strip() for column in allRows[0]], allRows[1:]
+
+"""
+    reading the first sheet of an Excel workbook.
+
+    openpyxl is only imported when an Excel file is actually opened, so the
+    app still runs for CSV without it being installed
+"""
+def read_excel(filePath):
+    try:
+        import openpyxl
+    except ImportError:
+        raise ValueError(
+            "reading Excel files needs openpyxl; install it with "
+            "'pip install -r requirements.txt', or save the sheet as CSV instead")
+
+    """
+        data_only asks for the value a formula worked out rather than the
+        formula itself, so a =SUM() total column arrives as a number
+    """
+    workbook = openpyxl.load_workbook(filePath, read_only=True, data_only=True)
+    try:
+        worksheet = workbook.worksheets[0]
+        rows = [[excel_cell(value) for value in row]
+                for row in worksheet.iter_rows(values_only=True)]
+    finally:
+        workbook.close()
+
+    # trailing blank rows and columns are common in a saved workbook
+    rows = [row for row in rows if any(cell for cell in row)]
+    if not rows:
+        return [], []
+
+    columns = [column.strip() for column in rows[0]]
+    while columns and not columns[-1]:
+        columns.pop()
+    return columns, rows[1:]
+
+"""
+    turning one Excel value into text.
+
+    a mark typed as 72 arrives as a number, and would otherwise be shown as
+    72.0, so whole numbers lose their decimal part
+"""
+def excel_cell(value):
+    if value is None:
+        return ""
+    if isinstance(value, bool):
+        return str(value)
+    if isinstance(value, float) and value.is_integer():
+        return str(int(value))
+    return str(value).strip()
 
 # splitting one line of a markdown table into its cells
 def _markdown_cells(line):
@@ -66,6 +117,8 @@ READERS = {
     ".csv": read_delimited,
     ".tsv": read_delimited,
     ".txt": read_delimited,
+    ".xlsx": read_excel,
+    ".xlsm": read_excel,
     ".md": read_markdown,
     ".markdown": read_markdown,
 }

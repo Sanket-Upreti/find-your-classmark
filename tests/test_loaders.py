@@ -108,13 +108,17 @@ def _():
 
 @check("an unsupported file type is refused clearly")
 def _():
-    path = temp_file(".xlsx", "nonsense")
+    path = temp_file(".pdf", "nonsense")
     try:
         loaders.load_table(path)
     except ValueError as error:
         assert "don't know how to read" in str(error)
     else:
         raise AssertionError("expected a ValueError")
+
+@check("excel is offered as a readable type")
+def _():
+    assert ".xlsx" in loaders.READERS and ".csv" in loaders.READERS
 
 @check("searching a column ignores case")
 def _():

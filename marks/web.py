@@ -1,11 +1,12 @@
 """ 
     a small local web page for looking up marks.
 
-    someone uploads a wide mark sheet, then a student types in what they know
-    about themselves and gets their own marks back.
+    someone uploads a wide mark sheet, as CSV or Excel, then a student types
+    in what they know about themselves and gets their own marks back.
 
     run it with:  python3 -m marks.web [port]
-    then open the address it prints. it uses only the standard library
+    then open the address it prints. CSV needs nothing installed; Excel needs
+    openpyxl, which is in requirements.txt
 """
 import email.parser
 import email.policy
@@ -23,6 +24,8 @@ from marks import sheet as sheet_module
 PROJECT_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 UPLOAD_DIR = os.path.join(PROJECT_DIR, "uploads")
 MAX_UPLOAD_BYTES = 5 * 1024 * 1024
+# what a person is allowed to upload; anything else is refused with an explanation
+ALLOWED_SUFFIXES = (".csv", ".xlsx", ".xlsm")
 
 STYLE = """
 :root { --ink:#1b1b1f; --paper:#fdfdfb; --card:#fff; --line:#dcdce2; --soft:#6b6b76; --accent:#2f5fd0; }
@@ -79,7 +82,8 @@ class Store:
     def load_saved(self):
         if not os.path.isdir(UPLOAD_DIR):
             return None
-        saved = [name for name in sorted(os.listdir(UPLOAD_DIR)) if name.lower().endswith(".csv")]
+        saved = [name for name in sorted(os.listdir(UPLOAD_DIR))
+                 if name.lower().endswith(ALLOWED_SUFFIXES)]
         if not saved:
             return None
         return self.load_file(os.path.join(UPLOAD_DIR, saved[-1]), saved[-1])
@@ -117,8 +121,10 @@ def upload_form(message="", isError=False):
 <p class="sub">Upload a mark sheet to get started. One row per student, one column per subject.</p>
 <div class="card">
   <form action="/upload" method="post" enctype="multipart/form-data">
-    <label for="sheet">Mark sheet (.csv)</label>
-    <input id="sheet" type="file" name="sheet" accept=".csv,text/csv" required>
+    <label for="sheet">Mark sheet (.csv or .xlsx)</label>
+    <input id="sheet" type="file" name="sheet"
+           accept=".csv,.xlsx,.xlsm,text/csv,application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+           required>
     <button type="submit">Upload</button>
   </form>
   {warning}
@@ -147,15 +153,31 @@ subjects: {escape(", ".join(sheet.markColumns))}</p>
 
 def marks_table(sheet, row):
     marks = sheet_module.marks_for(sheet, row)
+    subjects = [(column, value) for column, value in marks
+                if column not in sheet.summaryColumns]
+    sheetTotals = [(column, value) for column, value in marks
+                   if column in sheet.summaryColumns]
+
     rows = "".join(
         f"<tr><td>{escape(subject)}</td><td class='num'>{escape(value) or '&mdash;'}</td></tr>"
-        for subject, value in marks
+        for subject, value in subjects
     )
 
-    total, average = sheet_module.total_and_average(marks)
-    if total is not None:
-        rows += (f"<tr class='totals'><td>Total</td><td class='num'>{escape(total)}</td></tr>"
-                 f"<tr class='totals'><td>Average</td><td class='num'>{average:.1f}</td></tr>")
+    """ 
+        a sheet that already works out its own totals gets to keep them;
+        only a sheet without any has them worked out here
+    """
+    if sheetTotals:
+        rows += "".join(
+            f"<tr class='totals'><td>{escape(column)}</td>"
+            f"<td class='num'>{escape(value) or '&mdash;'}</td></tr>"
+            for column, value in sheetTotals
+        )
+    else:
+        total, average = sheet_module.total_and_average(subjects)
+        if total is not None:
+            rows += (f"<tr class='totals'><td>Total</td><td class='num'>{escape(total)}</td></tr>"
+                     f"<tr class='totals'><td>Average</td><td class='num'>{average:.1f}</td></tr>")
 
     who = " &middot; ".join(f"{escape(column)}: <strong>{escape(value)}</strong>"
                             for column, value in sheet_module.identity_of(sheet, row) if value)
@@ -248,10 +270,10 @@ def make_handler(store):
                 return
 
             fileName, contents = uploaded
-            if not fileName.lower().endswith(".csv"):
-                self.reply(400, page("Not a CSV", upload_form(
-                    "That doesn't look like a .csv file. Excel sheets aren't supported yet, "
-                    "so please export as CSV first.", True)))
+            if not fileName.lower().endswith(ALLOWED_SUFFIXES):
+                self.reply(400, page("Not a sheet", upload_form(
+                    "That file type isn't read. Please upload a "
+                    f"{' or a '.join(ALLOWED_SUFFIXES)} file.", True)))
                 return
 
             os.makedirs(UPLOAD_DIR, exist_ok=True)

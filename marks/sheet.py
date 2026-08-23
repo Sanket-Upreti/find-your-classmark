@@ -20,6 +20,17 @@ IDENTITY_HINTS = {
     "section", "div", "division", "stream", "house",
 }
 
+"""
+    column names that already hold a worked out figure.
+    these are shown like any other column, but adding them into our own total
+    would count the same marks twice, so they are left out of it
+"""
+SUMMARY_HINTS = {
+    "total", "totals", "totalmarks", "grandtotal", "sum", "subtotal",
+    "percentage", "percent", "pct", "average", "avg", "mean", "aggregate",
+    "result", "rank", "position", "cgpa", "gpa", "outof", "maxmarks",
+}
+
 # comparing column names without caring about spaces, case or punctuation
 def normalise(text):
     return "".join(character for character in str(text).lower() if character.isalnum())
@@ -48,6 +59,10 @@ class Sheet:
         if not self.identityColumns and self.columns:
             self.identityColumns = [self.columns[0]]
             self.markColumns = self.columns[1:]
+
+        # the sheet's own totals, kept apart so they aren't added up again
+        self.summaryColumns = [column for column in self.markColumns
+                               if normalise(column) in SUMMARY_HINTS]
 
     @property
     def rows(self):
@@ -90,11 +105,15 @@ def identity_of(sheet, row):
 
 """
     the total and average of the marks that are numbers.
-    a column holding something else, a grade or a remark, is left out of both
+    a column holding something else, a grade or a remark, is left out of both,
+    and so is any column named in skip, which is how a sheet's own Total
+    column avoids being counted a second time
 """
-def total_and_average(marks):
+def total_and_average(marks, skip=()):
     numbers = []
-    for _, value in marks:
+    for column, value in marks:
+        if column in skip:
+            continue
         try:
             numbers.append(float(value))
         except (TypeError, ValueError):

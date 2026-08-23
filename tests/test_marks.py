@@ -21,6 +21,16 @@ from marks import web
 
 CHECKS = []
 
+class Skipped(Exception):
+    """ raised by a check that can't run here, rather than failing it """
+
+# excel checks only run when openpyxl is installed; csv must work without it
+def needs_openpyxl():
+    try:
+        import openpyxl                     # noqa: F401
+    except ImportError:
+        raise Skipped("openpyxl is not installed")
+
 def check(name):
     def keep(function):
         CHECKS.append((name, function))
@@ -75,10 +85,14 @@ class Serving:
 
     # posting a file the way a browser's upload form does
     def upload(self, contents=SHEET_CSV, fileName="results.csv"):
+        return self.upload_bytes(contents.encode(), fileName)
+
+    def upload_bytes(self, contents, fileName="results.csv"):
         boundary = uuid.uuid4().hex
         body = (f"--{boundary}\r\n"
                 f'Content-Disposition: form-data; name="sheet"; filename="{fileName}"\r\n'
-                f"Content-Type: text/csv\r\n\r\n{contents}\r\n--{boundary}--\r\n").encode()
+                f"Content-Type: application/octet-stream\r\n\r\n").encode() + contents + \
+               f"\r\n--{boundary}--\r\n".encode()
         request = urllib.request.Request(
             self.base + "/upload", data=body,
             headers={"Content-Type": f"multipart/form-data; boundary={boundary}"})
@@ -127,6 +141,15 @@ def _():
     assert sheet_module.find(load_sheet(), {"roll": "12", "name": ""}) != []
     assert sheet_module.find(load_sheet(), {"roll": "", "name": ""}) == []
 
+@check("a sheet's own Total column is shown but not added up again")
+def _():
+    sheet = load_sheet("roll,name,Maths,Science,Total,Percentage\n12,Sanket,72,65,137,68.5\n")
+    assert sheet.summaryColumns == ["Total", "Percentage"]
+    marks = sheet_module.marks_for(sheet, sheet_module.find(sheet, {"roll": "12"})[0])
+    assert ("Total", "137") in marks
+    total, average = sheet_module.total_and_average(marks, skip=sheet.summaryColumns)
+    assert total == 137 and average == 68.5
+
 @check("total and average skip anything that isn't a number")
 def _():
     total, average = sheet_module.total_and_average([("Maths", "72"), ("Remarks", "Good"), ("Science", "68")])
@@ -135,6 +158,54 @@ def _():
 @check("marks with no numbers at all report no total")
 def _():
     assert sheet_module.total_and_average([("Grade", "A")]) == (None, None)
+
+# building a real .xlsx on the fly, the way a school would export one
+def write_xlsx(rows, name="results.xlsx"):
+    import openpyxl
+    path = os.path.join(tempfile.mkdtemp(), name)
+    workbook = openpyxl.Workbook()
+    for row in rows:
+        workbook.active.append(row)
+    workbook.save(path)
+    return path
+
+@check("an excel sheet is read, with numbers arriving as plain marks")
+def _():
+    needs_openpyxl()
+    path = write_xlsx([["roll", "name", "class", "Maths", "Science"],
+                       [12, "Sanket", 10, 72, 65.0],
+                       [13, "Mokshada", 10, 81, 90]])
+    sheet = sheet_module.from_table(loaders.load_table(path), "results.xlsx")
+    assert sheet.identityColumns == ["roll", "name", "class"]
+    assert sheet.markColumns == ["Maths", "Science"]
+    found = sheet_module.find(sheet, {"roll": "12"})
+    # 65.0 must not be shown as "65.0", and 12 must match the text typed into the form
+    assert sheet_module.marks_for(sheet, found[0]) == [("Maths", "72"), ("Science", "65")]
+
+@check("blank trailing rows in a workbook are ignored")
+def _():
+    needs_openpyxl()
+    path = write_xlsx([["roll", "Maths"], [12, 72], [None, None], [None, None]])
+    assert len(loaders.load_table(path).rows) == 1
+
+@check("an excel sheet can be uploaded and looked up through the page")
+def _():
+    needs_openpyxl()
+    path = write_xlsx([["roll", "name", "Maths", "Science"], [12, "Sanket", 72, 65]])
+    with open(path, "rb") as workbook:
+        contents = workbook.read()
+    with Serving() as serving:
+        assert serving.upload_bytes(contents, "results.xlsx")[0] == 200
+        results = results_section(serving.get("/lookup?" + urllib.parse.urlencode(
+            {"roll": "12", "name": ""}))[1])
+        assert "72" in results and "65" in results and "137" in results
+
+@check("a file type that isn't read is refused with an explanation")
+def _():
+    with Serving() as serving:
+        status, markup = serving.upload("nonsense", "results.pdf")
+        assert status == 400
+        assert ".csv" in markup and ".xlsx" in markup
 
 @check("the page asks for an upload before anything is loaded")
 def _():
@@ -169,6 +240,24 @@ def _():
         assert "72" in results and "65" in results and "80" in results
         assert "81" not in results and "90" not in results and "77" not in results
 
+@check("a sheet's own totals are shown once, not alongside worked out ones")
+def _():
+    with Serving() as serving:
+        serving.upload("roll,name,Maths,Science,Total\n12,Sanket,72,65,137\n", "withtotal.csv")
+        results = results_section(serving.get("/lookup?roll=12&name=")[1])
+        assert results.count("Total") == 1
+        assert "137" in results
+        # nothing is worked out on top of the sheet's own figures
+        assert "Average" not in results
+
+@check("a sheet with no totals of its own gets them worked out")
+def _():
+    with Serving() as serving:
+        serving.upload("roll,name,Maths,Science\n12,Sanket,72,65\n", "plain.csv")
+        results = results_section(serving.get("/lookup?roll=12&name=")[1])
+        assert "Total" in results and "137" in results
+        assert "Average" in results and "68.5" in results
+
 @check("an ambiguous match asks for more detail instead of showing marks")
 def _():
     with Serving() as serving:
@@ -193,13 +282,6 @@ def _():
         serving.upload()
         markup = serving.get("/lookup?roll=&name=&class=&section=")[1]
         assert "at least one box" in markup
-
-@check("a non-csv upload is refused with an explanation")
-def _():
-    with Serving() as serving:
-        status, markup = serving.upload("nonsense", "results.xlsx")
-        assert status == 400
-        assert "Excel" in markup
 
 @check("an empty sheet is refused")
 def _():
@@ -228,14 +310,31 @@ def _():
         serving.upload()
         assert serving.get("/nope")[0] == 404
 
+@check("without openpyxl, an excel upload is refused with an install hint")
+def _():
+    try:
+        import openpyxl                     # noqa: F401
+        raise Skipped("openpyxl is installed, so the missing case can't be shown")
+    except ImportError:
+        pass
+    with Serving() as serving:
+        status, markup = serving.upload_bytes(b"PK\x03\x04 not really", "results.xlsx")
+        assert status == 400
+        assert "openpyxl" in markup
+
 if __name__ == '__main__':
-    failures = 0
+    failures = skipped = 0
     for name, function in CHECKS:
         try:
             function()
             print(f"  ok   {name}")
+        except Skipped as reason:
+            skipped += 1
+            print(f"  skip {name} ({reason})")
         except AssertionError as error:
             failures += 1
             print(f"  FAIL {name}: {error or 'assertion failed'}")
-    print(f"\n{len(CHECKS) - failures}/{len(CHECKS)} checks passed")
+    passed = len(CHECKS) - failures - skipped
+    tail = f", {skipped} skipped" if skipped else ""
+    print(f"\n{passed}/{len(CHECKS) - skipped} checks passed{tail}")
     raise SystemExit(1 if failures else 0)

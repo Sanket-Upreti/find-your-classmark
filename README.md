@@ -4,7 +4,7 @@ A small web page for looking up a student's marks. Someone uploads a mark
 sheet, a student types in what they know about themselves, and they get their
 own marks back.
 
-Python 3.10 or newer. No dependencies — it uses only the standard library.
+Python 3.10 or newer. CSV needs nothing installed. Excel needs `openpyxl`.
 
 ## Running it
 
@@ -12,6 +12,17 @@ Python 3.10 or newer. No dependencies — it uses only the standard library.
 python3 -m marks.web          # then open http://127.0.0.1:8000
 python3 -m marks.web 9000     # on a different port
 ```
+
+For Excel files, install the one dependency first:
+
+```bash
+python3 -m venv .venv
+.venv/bin/pip install -r requirements.txt
+.venv/bin/python -m marks.web
+```
+
+Without it, CSV still works and an Excel upload is refused with a message
+saying what to install.
 
 ## The sheet
 
@@ -29,7 +40,10 @@ Columns named like `roll`, `name`, `class`, `section`, `id`, `grade` or
 taken to be a subject. If none of the headings are recognised, the first
 column is used as the identity column.
 
-Only `.csv` is read at the moment. Export from Excel first.
+`.csv`, `.xlsx` and `.xlsm` are read, along with `.tsv` and markdown tables.
+Excel is read from the first worksheet, and a formula such as `=SUM(E2:G2)`
+arrives as the number it worked out — as long as the file was saved by a
+spreadsheet program, which is what stores that number in the file.
 
 ## Looking yourself up
 
@@ -41,8 +55,10 @@ ignores case and surrounding spaces.
 If more than one student matches, no marks are shown and the page asks for
 more detail, so nobody is shown someone else's results by accident.
 
-Total and average are worked out from the marks that are numbers; a column
-holding a grade or a remark is left out of both.
+If your sheet already has a `Total` or `Percentage` column, its figures are
+shown as they are and nothing is added on top. If it has none, a total and an
+average are worked out from the marks that are numbers; a column holding a
+grade or a remark is left out of both.
 
 ## A note on privacy
 
@@ -57,7 +73,7 @@ data is never committed.
 
 ```
 marks/
-  loaders.py   reads a file into a Table
+  loaders.py   reads a CSV, Excel or markdown file into a Table
   table.py     rows as {column: [values]}
   sheet.py     tells who-columns from subject-columns, finds a student
   web.py       the upload and lookup pages
