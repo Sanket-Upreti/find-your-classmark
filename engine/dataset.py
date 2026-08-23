@@ -15,11 +15,12 @@ class Link:
 
 class Search:
     """ one thing a user is allowed to search for """
-    def __init__(self, kind, label, question=None, follow=None, choices=None, wording=None):
+    def __init__(self, kind, label, question=None, steps=None, choices=None, wording=None):
         self.kind = kind
         self.label = label
         self.question = question or f"Enter the {label}:"
-        self.follow = list(follow or [])
+        # the walk this search performs, declared by the config
+        self.steps = list(steps or [])
         self.choices = list(choices or [])
         # per interface message overrides, e.g. {"text": {...}, "gui": {...}}
         self.wording = dict(wording or {})
@@ -31,16 +32,27 @@ class Search:
     def __repr__(self):
         return f"Search({self.kind!r}, {self.label!r})"
 
+class Summary:
+    """ a count of how often each value appears in one column """
+    def __init__(self, label, table, group):
+        self.label = label
+        self.table = table
+        self.group = group
+
+    def __repr__(self):
+        return f"Summary({self.label!r}: {self.table}.{self.group})"
+
 class Dataset:
     """ 
         holds tables by name and answers questions about them.
         it never mentions a subject, a class or a location; the config supplies those names
     """
-    def __init__(self, tables, links=None, searches=None, name=""):
+    def __init__(self, tables, links=None, searches=None, summaries=None, name=""):
         self.name = name
         self.tables = dict(tables)
         self.links = dict(links or {})
         self.searches = list(searches or [])
+        self.summaries = list(summaries or [])
 
     def table(self, name):
         return self.tables[name]

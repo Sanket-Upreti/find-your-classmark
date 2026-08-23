@@ -1,0 +1,36 @@
+# a survey: the question is "how many of each", not "where is this one thing".
+# it needs no links at all, because nothing is being followed
+name: Module Feedback
+
+tables:
+  responses:
+    file: survey_responses.md
+
+links:
+  modules_for_respondent: { table: responses, from: respondent, to: module }
+  respondents_for_module: { table: responses, from: module,     to: respondent }
+
+searches:
+  - kind: classmark
+    label: module name
+    question: "Which module?"
+    steps:
+      - { follow: respondents_for_module, as: subjects }
+      - { follow: respondents_for_module, as: locations }
+    wording:
+      text:
+        classmark_none: "No responses recorded for {query}"
+        classmark_found: "{query} was answered by {subjects}"
+
+summaries:
+  - label: Would you recommend this module?
+    table: responses
+    group: recommend
+
+  - label: Best bit of the module
+    table: responses
+    group: best_bit
+
+  - label: Responses per module
+    table: responses
+    group: module

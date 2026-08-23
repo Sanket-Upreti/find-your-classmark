@@ -2,7 +2,7 @@
 import os
 
 from . import loaders
-from .dataset import Dataset, Link, Search
+from .dataset import Dataset, Link, Search, Summary
 
 try:
     import yaml
@@ -42,20 +42,35 @@ def load_config(configPath):
             kind=searchConfig["kind"],
             label=searchConfig["label"],
             question=searchConfig.get("question"),
-            follow=searchConfig.get("follow"),
+            steps=searchConfig.get("steps"),
             choices=searchConfig.get("choices"),
             wording=searchConfig.get("wording"),
         )
         for searchConfig in config["searches"]
     ]
 
-    # a link named by a search has to exist, otherwise the failure comes much later
+    # a link named by a step has to exist, otherwise the failure comes much later
     for search in searches:
-        for linkName in search.follow:
-            if linkName not in links:
-                raise ValueError(f"search {search.kind!r} follows unknown link {linkName!r}")
+        for step in search.steps:
+            if step.get("follow") not in links:
+                raise ValueError(f"search {search.kind!r} follows unknown link {step.get('follow')!r}")
 
-    return Dataset(tables, links=links, searches=searches, name=config.get("name", ""))
+    summaries = [
+        Summary(
+            label=summaryConfig["label"],
+            table=summaryConfig["table"],
+            group=summaryConfig["group"],
+        )
+        for summaryConfig in (config.get("summaries") or [])
+    ]
+
+    # a summary has to name a table that was actually loaded
+    for summary in summaries:
+        if summary.table not in tables:
+            raise ValueError(f"summary {summary.label!r} uses unknown table {summary.table!r}")
+
+    return Dataset(tables, links=links, searches=searches, summaries=summaries,
+                   name=config.get("name", ""))
 
 # the dataset this app ships with
 DEFAULT_CONFIG = os.path.join(os.path.dirname(os.path.dirname(os.path.abspath(__file__))),

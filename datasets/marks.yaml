@@ -18,7 +18,9 @@ searches:
   - kind: subject
     label: student name
     question: "Enter the student's name:"
-    follow: [modules_for_student, rooms_for_module]
+    steps:
+      - { follow: modules_for_student, as: classmark, each: true }
+      - { follow: rooms_for_module, from: classmark, as: location, each: true, keep_empty: true }
     wording:
       text:
         subject_not_found: "No modules are recorded for {query}"
@@ -29,7 +31,9 @@ searches:
   - kind: classmark
     label: module name
     question: "Enter the module name:"
-    follow: [rooms_for_module, students_for_module]
+    steps:
+      - { follow: rooms_for_module, as: locations }
+      - { follow: students_for_module, as: subjects }
     wording:
       text:
         classmark_none: "Nothing is recorded for module {query}"
@@ -40,7 +44,9 @@ searches:
   - kind: location
     label: room
     question: "Pick a room:"
-    follow: [modules_in_room, students_for_module]
+    steps:
+      - { follow: modules_in_room, from: location, as: classmark, each: true }
+      - { follow: students_for_module, from: classmark, as: subjects }
     choices: [Lab 2, Room 118]
     wording:
       text:

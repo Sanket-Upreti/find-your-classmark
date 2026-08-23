@@ -42,7 +42,9 @@ links:
 searches:
   - kind: classmark
     label: person
-    follow: [pets_for_person, people_for_pet]
+    steps:
+      - { follow: pets_for_person, as: locations }
+      - { follow: people_for_pet, as: subjects }
 """
 
 @check("a config loads its tables and links")
@@ -79,7 +81,7 @@ def _():
 
 @check("a search naming a link that doesn't exist is caught at load time")
 def _():
-    broken = SIMPLE_CONFIG.replace("follow: [pets_for_person, people_for_pet]", "follow: [nope, people_for_pet]")
+    broken = SIMPLE_CONFIG.replace("follow: pets_for_person", "follow: nope")
     try:
         config.load_config(temp_dataset(broken, SIMPLE_FILES))
     except ValueError as error:

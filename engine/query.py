@@ -1,48 +1,38 @@
 """ 
     answering the questions a search offers; these return data, never text.
-    which links get followed comes from the config, not from this file
+    the walk itself is declared by the config, so this file only shapes the answer
 """
-from . import results
+from . import results, traverse
 
 # what a subject's classes are, and where each of them sits
 def find_by_subject(dataset, search, subject):
-    toClasses, toLocations = search.follow
-
-    placements = []
-    for classmark in dataset.follow(toClasses, subject):
-        locations = dataset.follow(toLocations, classmark)
-        # a class with no location recorded still counts as a result
-        if not locations:
-            placements.append(results.ClassPlacement(classmark, None))
-        else:
-            # a class can sit in more than one location, so each pair is its own result
-            for location in locations:
-                placements.append(results.ClassPlacement(classmark, location))
-
-    return results.SubjectResult(query=subject, placements=tuple(placements))
+    rows = traverse.run_steps(dataset, search.steps, {"query": subject})
+    placements = tuple(
+        results.ClassPlacement(row["classmark"], row["location"]) for row in rows
+    )
+    return results.SubjectResult(query=subject, placements=placements)
 
 # where a class is, and every subject taught on it
 def find_by_classmark(dataset, search, classmark):
-    toLocations, toSubjects = search.follow
-
+    rows = traverse.run_steps(dataset, search.steps, {"query": classmark})
+    row = rows[0] if rows else {}
     return results.ClassmarkResult(
         query=classmark,
-        locations=tuple(dataset.follow(toLocations, classmark)),
-        subjects=tuple(dataset.follow(toSubjects, classmark)),
+        locations=tuple(row.get("locations") or ()),
+        subjects=tuple(row.get("subjects") or ()),
     )
 
 # every class in a location, with the subjects taught on each of them
 def find_by_location(dataset, search, choice):
-    toClasses, toSubjects = search.follow
-
     locationSelected = search.numbered_choices().get(choice)
     # error handling when the choice isn't one of the locations on offer
     if locationSelected is None:
         return results.LocationResult(query=choice)
 
+    rows = traverse.run_steps(dataset, search.steps, {"query": choice, "location": locationSelected})
     classes = tuple(
-        results.ClassSubjects(classmark, tuple(dataset.follow(toSubjects, classmark)))
-        for classmark in dataset.follow(toClasses, locationSelected)
+        results.ClassSubjects(row["classmark"], tuple(row.get("subjects") or ()))
+        for row in rows
     )
     return results.LocationResult(query=choice, location=locationSelected, classes=classes)
 
@@ -55,3 +45,13 @@ BY_KIND = {
 
 def run(dataset, search, value):
     return BY_KIND[search.kind](dataset, search, value)
+
+# the rows a search produces, before any wording is applied; used by the web page
+def rows_for(dataset, search, value):
+    seed = {"query": value}
+    if search.choices:
+        chosen = search.numbered_choices().get(value)
+        if chosen is None:
+            return []
+        seed[search.kind] = chosen
+    return traverse.run_steps(dataset, search.steps, seed)

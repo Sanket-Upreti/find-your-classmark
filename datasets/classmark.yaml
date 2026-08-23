@@ -37,17 +37,26 @@ searches:
   - kind: subject
     label: subject name or part-name
     question: "Enter your subject/part-name below:"
-    follow: [classmarks_for_subject, locations_for_classmark]
+    # one row per class the subject has, then one row per location that class sits in
+    steps:
+      - { follow: classmarks_for_subject, as: classmark, each: true }
+      - { follow: locations_for_classmark, from: classmark, as: location, each: true, keep_empty: true }
 
   - kind: classmark
     label: classmark
     question: "Enter your classmark below:"
-    follow: [locations_for_classmark, subjects_for_classmark]
+    # a single row, gathering every location and every subject the class has
+    steps:
+      - { follow: locations_for_classmark, as: locations }
+      - { follow: subjects_for_classmark, as: subjects }
 
   - kind: location
     label: location
     question: "Enter your location below:"
-    follow: [classmarks_in_location, subjects_for_classmark]
+    # one row per class in the chosen location, gathering that class's subjects
+    steps:
+      - { follow: classmarks_in_location, from: location, as: classmark, each: true }
+      - { follow: subjects_for_classmark, from: classmark, as: subjects }
     # a search with choices offers a numbered list instead of a free text box
     choices:
       - Top floor bottom left
