@@ -1,0 +1,58 @@
+# one dataset: the files it lives in, how those files link up, and what can be searched.
+# file paths are relative to this file, so it works whatever directory you run from.
+name: Find Your Classmark
+
+tables:
+  subjects:
+    file: ../subject_classmark.csv
+  rooms:
+    file: ../classmark_location.csv
+
+# a link reads as "find the rows where <from> holds a value, then take their <to>"
+links:
+  classmarks_for_subject:
+    table: subjects
+    from: subject
+    to: classmark
+
+  subjects_for_classmark:
+    table: subjects
+    from: classmark
+    to: subject
+    lowercase: true          # keeps the lower case wording the app has always used
+
+  locations_for_classmark:
+    table: rooms
+    from: classmark
+    to: location
+
+  classmarks_in_location:
+    table: rooms
+    from: location
+    to: classmark
+    lowercase: true          # keeps the lower case wording the app has always used
+
+# what a user is offered, in the order they are offered it
+searches:
+  - kind: subject
+    label: subject name or part-name
+    question: "Enter your subject/part-name below:"
+    follow: [classmarks_for_subject, locations_for_classmark]
+
+  - kind: classmark
+    label: classmark
+    question: "Enter your classmark below:"
+    follow: [locations_for_classmark, subjects_for_classmark]
+
+  - kind: location
+    label: location
+    question: "Enter your location below:"
+    follow: [classmarks_in_location, subjects_for_classmark]
+    # a search with choices offers a numbered list instead of a free text box
+    choices:
+      - Top floor bottom left
+      - Top floor top left
+      - Top floor top right
+      - Top floor bottom right
+      - Middle floor
+      - Bottom floor

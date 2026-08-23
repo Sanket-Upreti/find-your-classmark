@@ -1,13 +1,46 @@
-""" a set of loaded tables, and the links between them """
-from . import loaders
+""" a set of loaded tables, the links between them, and what can be searched """
+
+class Link:
+    """ 'find the rows where fromColumn holds a value, then take their toColumn' """
+    def __init__(self, name, table, fromColumn, toColumn, lowercase=False):
+        self.name = name
+        self.table = table
+        self.fromColumn = fromColumn
+        self.toColumn = toColumn
+        # some wording expects lower case values; the config decides, not the code
+        self.lowercase = lowercase
+
+    def __repr__(self):
+        return f"Link({self.name!r}: {self.table}.{self.fromColumn} -> {self.toColumn})"
+
+class Search:
+    """ one thing a user is allowed to search for """
+    def __init__(self, kind, label, question=None, follow=None, choices=None, wording=None):
+        self.kind = kind
+        self.label = label
+        self.question = question or f"Enter the {label}:"
+        self.follow = list(follow or [])
+        self.choices = list(choices or [])
+        # per interface message overrides, e.g. {"text": {...}, "gui": {...}}
+        self.wording = dict(wording or {})
+
+    # the numbered list a user picks from, when this search offers choices
+    def numbered_choices(self):
+        return {number: choice for number, choice in enumerate(self.choices, start=1)}
+
+    def __repr__(self):
+        return f"Search({self.kind!r}, {self.label!r})"
 
 class Dataset:
     """ 
         holds tables by name and answers questions about them.
-        this class stays generic; it never mentions a subject, class or location
+        it never mentions a subject, a class or a location; the config supplies those names
     """
-    def __init__(self, tables):
+    def __init__(self, tables, links=None, searches=None, name=""):
+        self.name = name
         self.tables = dict(tables)
+        self.links = dict(links or {})
+        self.searches = list(searches or [])
 
     def table(self, name):
         return self.tables[name]
@@ -16,10 +49,7 @@ class Dataset:
     def rows_where(self, tableName, column, value):
         return self.table(tableName).rows_where(column, value)
 
-    """ 
-        following a link: find the rows matching a value in one column, 
-        then collect what those rows hold in another column
-    """
+    # the rows matching a value in one column, read back through another column
     def values_where(self, tableName, keyColumn, keyValue, valueColumn):
         table = self.table(tableName)
         collected = []
@@ -27,38 +57,18 @@ class Dataset:
             collected.extend(table.values(row, valueColumn))
         return collected
 
+    # following a named link from the config
+    def follow(self, linkName, value):
+        link = self.links[linkName]
+        collected = self.values_where(link.table, link.fromColumn, value, link.toColumn)
+        if link.lowercase:
+            collected = [found.lower() for found in collected]
+        return collected
+
     # every value a column holds, for building a list of choices
     def distinct(self, tableName, column):
         return self.table(tableName).distinct(column)
 
-class ClassmarkDataset(Dataset):
-    """ 
-        the only place that knows this app's tables are called 'subjects' and 'rooms', 
-        and that their columns are subject/classmark/location.
-        a config file replaces this class in stage 3
-    """
-    SUBJECTS = "subjects"
-    ROOMS = "rooms"
-
-    def classmarks_for_subject(self, subject):
-        return self.values_where(self.SUBJECTS, "subject", subject, "classmark")
-
-    def locations_for_classmark(self, classmark):
-        return self.values_where(self.ROOMS, "classmark", classmark, "location")
-
-    def subjects_for_classmark(self, classmark):
-        # lowercased to keep the wording the app has always used; drop .lower() to show real casing
-        return [subject.lower() for subject in
-                self.values_where(self.SUBJECTS, "classmark", classmark, "subject")]
-
-    def classmarks_in_location(self, location):
-        # lowercased to keep the wording the app has always used; drop .lower() to show real casing
-        return [classmark.lower() for classmark in
-                self.values_where(self.ROOMS, "location", location, "classmark")]
-
-# building the dataset out of the two files the app ships with
-def load_dataset(classmarkFile='classmark_location.csv', subjectFile='subject_classmark.csv'):
-    return ClassmarkDataset({
-        ClassmarkDataset.ROOMS: loaders.load_table(classmarkFile, ClassmarkDataset.ROOMS),
-        ClassmarkDataset.SUBJECTS: loaders.load_table(subjectFile, ClassmarkDataset.SUBJECTS),
-    })
+    # the search a user picked, by its position in the config
+    def search_at(self, position):
+        return self.searches[position]

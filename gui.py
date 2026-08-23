@@ -1,8 +1,13 @@
 from tkinter import *
 import time
-import csv_func, location_available
-from engine import dataset, query
+import csv_func
+from engine import config, query
 from render import gui as render_gui
+
+# making sure the files exist, then loading the dataset described by the config
+csv_func.ensure_csv_files()
+classmarkData = config.load_default()
+userOptions = classmarkData.searches
 
 # setting up root
 root = Tk()
@@ -27,31 +32,21 @@ searchResult = Label(root, text="")
 
 statusBar = Label(root, text="")
 
-# conditional dictionary; loop-up dictionary
-showQuestion = {
-    1: "Enter your subject/part-name below:", 
-    2: "Enter your classmark below:", 
-    3: "Enter your location below:", 
-}
-
-# checkbox options for search
+# a checkbox per search the config offers
 selectedOption = StringVar()
-option1 = Checkbutton(root, text="Will you be entering subject name/partname?", variable=selectedOption, onvalue="1", offvalue="", font=("Aria, 10"))
-option2 = Checkbutton(root, text="Will you be entering classmark?", variable=selectedOption, onvalue="2", offvalue="", font=("Aria, 10"))
-option3 = Checkbutton(root, text="Will you be entering location?", variable=selectedOption, onvalue="3", offvalue="", font=("Aria, 10"))
+searchOptions = [
+    Checkbutton(root, text=f"Will you be entering {search.label}?", variable=selectedOption,
+                onvalue=str(number), offvalue="", font=("Aria, 10"))
+    for number, search in enumerate(userOptions, start=1)
+]
 
-# checkbox options for locations
+# a checkbox per choice the location search offers
 selectedLocation = StringVar()
-locationOption1 = Checkbutton(root, text="Top floor bottom left", variable=selectedLocation, onvalue="1", offvalue="")
-locationOption2 = Checkbutton(root, text="Top floor top left", variable=selectedLocation, onvalue="2", offvalue="")
-locationOption3 = Checkbutton(root, text="Top floor top right", variable=selectedLocation, onvalue="3", offvalue="")
-locationOption4 = Checkbutton(root, text="Top floor bottom right", variable=selectedLocation, onvalue="4", offvalue="")
-locationOption5 = Checkbutton(root, text="Middle floor", variable=selectedLocation, onvalue="5", offvalue="")
-locationOption6 = Checkbutton(root, text="Bottom floor", variable=selectedLocation, onvalue="6", offvalue="")
-
-# making sure both CSV files exist, then loading them
-csv_func.ensure_csv_files()
-classmarkData = dataset.load_dataset()
+locationSearch = next(search for search in userOptions if search.choices)
+locationOptions = [
+    Checkbutton(root, text=choice, variable=selectedLocation, onvalue=str(number), offvalue="")
+    for number, choice in locationSearch.numbered_choices().items()
+]
 
 # the widgets a result gets drawn onto, handed to the renderer
 resultWidgets = {"searchResult": searchResult, "listbox": listbox, "end": END}
@@ -75,19 +70,14 @@ def change_cursor_on_buttons():
 def hide_everything():
     mainMessage.pack_forget()
     searchInstruction.pack_forget()
-    option1.pack_forget() 
-    option2.pack_forget() 
-    option3.pack_forget() 
+    for searchOption in searchOptions:
+        searchOption.pack_forget()
     searchButton.pack_forget()
     instructionButton.pack_forget()
     errorMessage.pack_forget()
     textToSearch.pack_forget()
-    locationOption1.pack_forget() 
-    locationOption2.pack_forget() 
-    locationOption3.pack_forget() 
-    locationOption4.pack_forget() 
-    locationOption5.pack_forget() 
-    locationOption6.pack_forget() 
+    for locationOption in locationOptions:
+        locationOption.pack_forget()
     showResultButton.pack_forget()
     goBackButton.pack_forget()
     userInstruction.pack_forget()
@@ -105,9 +95,8 @@ def show_start_page():
     mainMessage.pack()
     searchInstruction.config(text="Check the option of your choice \U0001F447")
     searchInstruction.pack()
-    option1.pack(pady=(2,2)) 
-    option2.pack(pady=(2,2)) 
-    option3.pack(pady=(2,2)) 
+    for searchOption in searchOptions:
+        searchOption.pack(pady=(2,2))
     searchButton.pack(pady=(16, 0))
     instructionButton.pack(side=RIGHT, fill=BOTH)
 
@@ -117,19 +106,15 @@ def show_second_page():
     if selectedOption.get():
         hide_everything()
         wait_and_search('loading....')
-        question = showQuestion[int(selectedOption.get())]
-        searchInstruction.config(text=f"{question}")
+        searchSelected = classmarkData.search_at(int(selectedOption.get()) - 1)
+        searchInstruction.config(text=f"{searchSelected.question}")
         
-        # displaying checkbox option if location(option 3) is selected
-        if selectedOption.get() == "3":         
+        # displaying checkbox option when the chosen search offers a list of choices
+        if searchSelected.choices:         
             mainMessage.config(text="Your location options:\n")
             mainMessage.pack()
-            locationOption1.pack(pady=(2,2)) 
-            locationOption2.pack(pady=(2,2)) 
-            locationOption3.pack(pady=(2,2)) 
-            locationOption4.pack(pady=(2,2)) 
-            locationOption5.pack(pady=(2,2)) 
-            locationOption6.pack(pady=(2,2)) 
+            for locationOption in locationOptions:
+                locationOption.pack(pady=(2,2))
         else:
             # display of a input textbox for entering a value
             searchInstruction.pack()
@@ -179,17 +164,10 @@ def show_searches():
             """
                 displaying output based on user's choice
             """
-            if selectedOption.get() == "1":
-                render_gui.show_subject(query.find_by_subject(classmarkData, textReceived), resultWidgets)
-                               
-            if selectedOption.get() == "2":
-                render_gui.show_classmark(query.find_by_classmark(classmarkData, textReceived), resultWidgets)
-
-            if selectedOption.get() == "3":   
-                render_gui.show_location(
-                    query.find_by_location(classmarkData, int(selectedLocation.get()), location_available.location_options),
-                    resultWidgets,
-                )
+            searchSelected = classmarkData.search_at(int(selectedOption.get()) - 1)
+            # a search with choices is answered by a number, the others by typed text
+            valueSearched = int(selectedLocation.get()) if searchSelected.choices else textReceived
+            render_gui.show(searchSelected, query.run(classmarkData, searchSelected, valueSearched), resultWidgets)
     else:
         # error handling by showing error message
         errorMessage.config(text="nothing to search")

@@ -1,0 +1,50 @@
+# a second dataset, added without writing any python.
+# it reuses the same three search shapes, and renames every sentence.
+name: Who Takes What
+
+tables:
+  enrolments:
+    file: enrolments.md
+  rooms:
+    file: rooms.md
+
+links:
+  modules_for_student: { table: enrolments, from: student, to: module }
+  students_for_module: { table: enrolments, from: module,  to: student }
+  rooms_for_module:    { table: rooms,      from: module,  to: room }
+  modules_in_room:     { table: rooms,      from: room,    to: module }
+
+searches:
+  - kind: subject
+    label: student name
+    question: "Enter the student's name:"
+    follow: [modules_for_student, rooms_for_module]
+    wording:
+      text:
+        subject_not_found: "No modules are recorded for {query}"
+        subject_single: "{query} takes {classmark}, which meets in {location}"
+        subject_header: "{query} takes several modules:"
+        subject_line: "  {classmark}, which meets in {location}"
+
+  - kind: classmark
+    label: module name
+    question: "Enter the module name:"
+    follow: [rooms_for_module, students_for_module]
+    wording:
+      text:
+        classmark_none: "Nothing is recorded for module {query}"
+        classmark_found: "{query} meets in {locations} and is taken by {subjects}"
+        classmark_no_subject: "{query} meets in {locations}, but nobody is enrolled"
+        classmark_no_location: "{query} is taken by {subjects}, but has no room"
+
+  - kind: location
+    label: room
+    question: "Pick a room:"
+    follow: [modules_in_room, students_for_module]
+    choices: [Lab 2, Room 118]
+    wording:
+      text:
+        location_header: "In {location}:"
+        location_line: "  {classmark}, taken by {subjects}"
+        location_line_no_subject: "  {classmark}, with nobody enrolled"
+        location_invalid: "There is no room numbered {query}"
