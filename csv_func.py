@@ -1,4 +1,5 @@
 import csv
+import os
 
 # manual creating of dictionary inside a list with datas for creating a CSV with subject and classmark
 subject_classmark_data = [
@@ -618,25 +619,31 @@ classmark_location_data = [
 subject_classmark_header = ["subject", "classmark"]
 classmark_location_header = ["classmark", "location"]
 
+# joining a cell holding several values, so a file never has to contain a python list
+def cell_from_value(value):
+    if isinstance(value, list):
+        return ";".join(str(part) for part in value)
+    return value
+
 # function to create CSV file
 def create_csv(fileName, dataList, header):
     with open(f'{fileName}', 'w', newline="") as new_file:
-        dataKeys = dataList[0].keys()
         writer = csv.writer(new_file)
         writer.writerow(header)
-        writer = csv.DictWriter(new_file, fieldnames= dataKeys)
         for values in dataList:    
-            writer.writerow(values)            
+            writer.writerow([cell_from_value(values[column]) for column in header])
 
-# function to read CSV file
-def read_csv(fileName):
-    with open(f'{fileName}', 'r') as file_to_read:
-        datas = csv.reader(file_to_read)
-        storeData = []        
-        for data in datas:
-            storeData.append(data)    
-        return storeData;
+# function to create a CSV file only when it is missing, so edited data is never lost
+def ensure_csv(fileName, dataList, header):
+    if not os.path.exists(fileName):
+        create_csv(fileName, dataList, header)
 
-# creating 2 files with CSV then storing it on variables
-subject_and_classmark = create_csv("subject_classmark.csv", subject_classmark_data, subject_classmark_header)
-Classmark_and_location = create_csv("classmark_location.csv", classmark_location_data, classmark_location_header)
+# function to make sure both CSV files the app reads from exist
+def ensure_csv_files():
+    ensure_csv("subject_classmark.csv", subject_classmark_data, subject_classmark_header)
+    ensure_csv("classmark_location.csv", classmark_location_data, classmark_location_header)
+
+# rebuilding both CSV files from the data above; only when this file is run on its own
+if __name__ == "__main__":
+    create_csv("subject_classmark.csv", subject_classmark_data, subject_classmark_header)
+    create_csv("classmark_location.csv", classmark_location_data, classmark_location_header)

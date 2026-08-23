@@ -1,0 +1,687 @@
+===== INPUT: '1\nArt\n'
+------------------Hello There!!----------------------
+We'll be providing you your classmark together with its locations and subject name(s)
+-------------------------------------------------------
+Please select one of the option below by typing your desired option number
+1. Enter a subject name or part-name
+2. Enter a classmark
+3. Enter a location
+Your choice here:Enter the subject name or part-name:Thank you for answering, Subject Art happens on class N which is located in Top floor top left
+
+===== INPUT: '1\nAmerican History\n'
+------------------Hello There!!----------------------
+We'll be providing you your classmark together with its locations and subject name(s)
+-------------------------------------------------------
+Please select one of the option below by typing your desired option number
+1. Enter a subject name or part-name
+2. Enter a classmark
+3. Enter a location
+Your choice here:Enter the subject name or part-name:Thank you for answering. There are multiple classes happening for Subject American History
+Subject American History happens on class E which is located in Top floor bottom left
+Subject American History happens on class F which is located in Top floor bottom left
+
+===== INPUT: '1\nAMERICAN HISTORY\n'
+------------------Hello There!!----------------------
+We'll be providing you your classmark together with its locations and subject name(s)
+-------------------------------------------------------
+Please select one of the option below by typing your desired option number
+1. Enter a subject name or part-name
+2. Enter a classmark
+3. Enter a location
+Your choice here:Enter the subject name or part-name:Thank you for answering. There are multiple classes happening for Subject AMERICAN HISTORY
+Subject AMERICAN HISTORY happens on class E which is located in Top floor bottom left
+Subject AMERICAN HISTORY happens on class F which is located in Top floor bottom left
+
+===== INPUT: '1\nzzz\n'
+------------------Hello There!!----------------------
+We'll be providing you your classmark together with its locations and subject name(s)
+-------------------------------------------------------
+Please select one of the option below by typing your desired option number
+1. Enter a subject name or part-name
+2. Enter a classmark
+3. Enter a location
+Your choice here:Enter the subject name or part-name:Thank you for answering, but no class or location was found for subject zzz
+
+===== INPUT: '1\nsubject\n'
+------------------Hello There!!----------------------
+We'll be providing you your classmark together with its locations and subject name(s)
+-------------------------------------------------------
+Please select one of the option below by typing your desired option number
+1. Enter a subject name or part-name
+2. Enter a classmark
+3. Enter a location
+Your choice here:Enter the subject name or part-name:Thank you for answering, but no class or location was found for subject subject
+
+===== INPUT: '1\n\n'
+------------------Hello There!!----------------------
+We'll be providing you your classmark together with its locations and subject name(s)
+-------------------------------------------------------
+Please select one of the option below by typing your desired option number
+1. Enter a subject name or part-name
+2. Enter a classmark
+3. Enter a location
+Your choice here:Enter the subject name or part-name:Thank you for answering, but no class or location was found for subject 
+
+===== INPUT: '2\nQH\n'
+------------------Hello There!!----------------------
+We'll be providing you your classmark together with its locations and subject name(s)
+-------------------------------------------------------
+Please select one of the option below by typing your desired option number
+1. Enter a subject name or part-name
+2. Enter a classmark
+3. Enter a location
+Your choice here:Enter the classmark:Thank you for answering, Subject biology, ecology happens on class QH which is located in Top floor bottom right
+
+===== INPUT: '2\nJX\n'
+------------------Hello There!!----------------------
+We'll be providing you your classmark together with its locations and subject name(s)
+-------------------------------------------------------
+Please select one of the option below by typing your desired option number
+1. Enter a subject name or part-name
+2. Enter a classmark
+3. Enter a location
+Your choice here:Enter the classmark:Thank you for answering, Subject international law, politics happens on class JX which is located in Top floor top left, Bottom floor
+
+===== INPUT: '2\nqh\n'
+------------------Hello There!!----------------------
+We'll be providing you your classmark together with its locations and subject name(s)
+-------------------------------------------------------
+Please select one of the option below by typing your desired option number
+1. Enter a subject name or part-name
+2. Enter a classmark
+3. Enter a location
+Your choice here:Enter the classmark:Thank you for answering, Subject biology, ecology happens on class qh which is located in Top floor bottom right
+
+===== INPUT: '2\nAA\n'
+------------------Hello There!!----------------------
+We'll be providing you your classmark together with its locations and subject name(s)
+-------------------------------------------------------
+Please select one of the option below by typing your desired option number
+1. Enter a subject name or part-name
+2. Enter a classmark
+3. Enter a location
+Your choice here:Enter the classmark:Thank you for answering, but no subject was found for class AA which is in Middle floor
+
+===== INPUT: '2\nZZ\n'
+------------------Hello There!!----------------------
+We'll be providing you your classmark together with its locations and subject name(s)
+-------------------------------------------------------
+Please select one of the option below by typing your desired option number
+1. Enter a subject name or part-name
+2. Enter a classmark
+3. Enter a location
+Your choice here:Enter the classmark:Thank you for answering, but no location or subject was found for class ZZ
+
+===== INPUT: '2\nclassmark\n'
+------------------Hello There!!----------------------
+We'll be providing you your classmark together with its locations and subject name(s)
+-------------------------------------------------------
+Please select one of the option below by typing your desired option number
+1. Enter a subject name or part-name
+2. Enter a classmark
+3. Enter a location
+Your choice here:Enter the classmark:Thank you for answering, but no location or subject was found for class classmark
+
+===== INPUT: '2\n\n'
+------------------Hello There!!----------------------
+We'll be providing you your classmark together with its locations and subject name(s)
+-------------------------------------------------------
+Please select one of the option below by typing your desired option number
+1. Enter a subject name or part-name
+2. Enter a classmark
+3. Enter a location
+Your choice here:Enter the classmark:Thank you for answering, but no location or subject was found for class 
+
+===== INPUT: '3\n1\n'
+------------------Hello There!!----------------------
+We'll be providing you your classmark together with its locations and subject name(s)
+-------------------------------------------------------
+Please select one of the option below by typing your desired option number
+1. Enter a subject name or part-name
+2. Enter a classmark
+3. Enter a location
+Your choice here:Please Select a NUMBER from all available locations:
+1. Top floor bottom left
+2. Top floor top left
+3. Top floor top right
+4. Top floor bottom right
+5. Middle floor
+6. Bottom floor
+Enter the location:Thank you for answering, There are some classes and subjects taught in location Top floor bottom left
+No subject was found for class dt in location Top floor bottom left
+No subject was found for class du in location Top floor bottom left
+No subject was found for class dv in location Top floor bottom left
+No subject was found for class dw in location Top floor bottom left
+No subject was found for class dx in location Top floor bottom left
+No subject was found for class dy in location Top floor bottom left
+No subject was found for class dz in location Top floor bottom left
+Subject american history happens on class e which is located in Top floor bottom left
+No subject was found for class ea in location Top floor bottom left
+No subject was found for class eb in location Top floor bottom left
+No subject was found for class ec in location Top floor bottom left
+No subject was found for class ed in location Top floor bottom left
+No subject was found for class ee in location Top floor bottom left
+No subject was found for class ef in location Top floor bottom left
+No subject was found for class eg in location Top floor bottom left
+No subject was found for class eh in location Top floor bottom left
+No subject was found for class ei in location Top floor bottom left
+No subject was found for class ej in location Top floor bottom left
+No subject was found for class ek in location Top floor bottom left
+No subject was found for class el in location Top floor bottom left
+No subject was found for class em in location Top floor bottom left
+No subject was found for class en in location Top floor bottom left
+No subject was found for class eo in location Top floor bottom left
+No subject was found for class ep in location Top floor bottom left
+No subject was found for class eq in location Top floor bottom left
+No subject was found for class er in location Top floor bottom left
+No subject was found for class es in location Top floor bottom left
+No subject was found for class et in location Top floor bottom left
+No subject was found for class eu in location Top floor bottom left
+No subject was found for class ev in location Top floor bottom left
+No subject was found for class ew in location Top floor bottom left
+No subject was found for class ex in location Top floor bottom left
+No subject was found for class ey in location Top floor bottom left
+No subject was found for class ez in location Top floor bottom left
+Subject american history happens on class f which is located in Top floor bottom left
+No subject was found for class fa in location Top floor bottom left
+No subject was found for class fb in location Top floor bottom left
+No subject was found for class fc in location Top floor bottom left
+No subject was found for class fd in location Top floor bottom left
+No subject was found for class fe in location Top floor bottom left
+No subject was found for class ff in location Top floor bottom left
+No subject was found for class fg in location Top floor bottom left
+No subject was found for class fh in location Top floor bottom left
+No subject was found for class fi in location Top floor bottom left
+No subject was found for class fj in location Top floor bottom left
+No subject was found for class fk in location Top floor bottom left
+No subject was found for class fl in location Top floor bottom left
+No subject was found for class fm in location Top floor bottom left
+No subject was found for class fn in location Top floor bottom left
+No subject was found for class fo in location Top floor bottom left
+No subject was found for class fp in location Top floor bottom left
+No subject was found for class fq in location Top floor bottom left
+No subject was found for class fr in location Top floor bottom left
+No subject was found for class fs in location Top floor bottom left
+No subject was found for class ft in location Top floor bottom left
+No subject was found for class fu in location Top floor bottom left
+No subject was found for class fv in location Top floor bottom left
+No subject was found for class fw in location Top floor bottom left
+No subject was found for class fx in location Top floor bottom left
+No subject was found for class fy in location Top floor bottom left
+No subject was found for class fz in location Top floor bottom left
+Subject geography happens on class g which is located in Top floor bottom left
+Subject geography happens on class ga which is located in Top floor bottom left
+Subject geography happens on class gb which is located in Top floor bottom left
+Subject geography happens on class gc which is located in Top floor bottom left
+Subject geography happens on class gd which is located in Top floor bottom left
+Subject environmental studies, geography happens on class ge which is located in Top floor bottom left
+Subject environmental studies, geography happens on class gf which is located in Top floor bottom left
+No subject was found for class gg in location Top floor bottom left
+No subject was found for class gh in location Top floor bottom left
+No subject was found for class gi in location Top floor bottom left
+No subject was found for class gj in location Top floor bottom left
+No subject was found for class gk in location Top floor bottom left
+No subject was found for class gl in location Top floor bottom left
+No subject was found for class gm in location Top floor bottom left
+No subject was found for class gn in location Top floor bottom left
+No subject was found for class go in location Top floor bottom left
+No subject was found for class gp in location Top floor bottom left
+No subject was found for class gq in location Top floor bottom left
+No subject was found for class gr in location Top floor bottom left
+No subject was found for class gs in location Top floor bottom left
+No subject was found for class gt in location Top floor bottom left
+No subject was found for class gu in location Top floor bottom left
+No subject was found for class gv in location Top floor bottom left
+No subject was found for class gw in location Top floor bottom left
+No subject was found for class gx in location Top floor bottom left
+No subject was found for class gy in location Top floor bottom left
+No subject was found for class gz in location Top floor bottom left
+No subject was found for class h in location Top floor bottom left
+Subject economics happens on class ha which is located in Top floor bottom left
+Subject economics happens on class hb which is located in Top floor bottom left
+Subject economics happens on class hc which is located in Top floor bottom left
+Subject business, economics, human resource management, management and marketing happens on class hd which is located in Top floor bottom left
+Subject business, economics, human resource management, management and marketing happens on class he which is located in Top floor bottom left
+Subject accountancy, business, economics, human resource management, management and marketing happens on class hf which is located in Top floor bottom left
+Subject finance happens on class hg which is located in Top floor bottom left
+Subject economics, finance happens on class hh which is located in Top floor bottom left
+Subject economics, finance happens on class hi which is located in Top floor bottom left
+Subject economics, finance happens on class hj which is located in Top floor bottom left
+
+===== INPUT: '3\n2\n'
+------------------Hello There!!----------------------
+We'll be providing you your classmark together with its locations and subject name(s)
+-------------------------------------------------------
+Please select one of the option below by typing your desired option number
+1. Enter a subject name or part-name
+2. Enter a classmark
+3. Enter a location
+Your choice here:Please Select a NUMBER from all available locations:
+1. Top floor bottom left
+2. Top floor top left
+3. Top floor top right
+4. Top floor bottom right
+5. Middle floor
+6. Bottom floor
+Enter the location:Thank you for answering, There are some classes and subjects taught in location Top floor top left
+Subject sociology happens on class hm which is located in Top floor top left
+Subject sociology happens on class hn which is located in Top floor top left
+Subject sociology happens on class ho which is located in Top floor top left
+Subject sociology happens on class hp which is located in Top floor top left
+Subject sociology happens on class hq which is located in Top floor top left
+Subject sociology happens on class hr which is located in Top floor top left
+Subject sociology happens on class hs which is located in Top floor top left
+Subject sociology happens on class ht which is located in Top floor top left
+No subject was found for class hu in location Top floor top left
+Subject criminology, forensic science, social work happens on class hv which is located in Top floor top left
+No subject was found for class hw in location Top floor top left
+No subject was found for class hx in location Top floor top left
+No subject was found for class hy in location Top floor top left
+No subject was found for class hz in location Top floor top left
+No subject was found for class i in location Top floor top left
+No subject was found for class ia in location Top floor top left
+No subject was found for class ib in location Top floor top left
+No subject was found for class ic in location Top floor top left
+No subject was found for class id in location Top floor top left
+No subject was found for class ie in location Top floor top left
+No subject was found for class if in location Top floor top left
+No subject was found for class ig in location Top floor top left
+No subject was found for class ih in location Top floor top left
+No subject was found for class ii in location Top floor top left
+No subject was found for class ij in location Top floor top left
+No subject was found for class ik in location Top floor top left
+No subject was found for class il in location Top floor top left
+No subject was found for class im in location Top floor top left
+No subject was found for class in in location Top floor top left
+No subject was found for class io in location Top floor top left
+No subject was found for class ip in location Top floor top left
+No subject was found for class iq in location Top floor top left
+No subject was found for class ir in location Top floor top left
+No subject was found for class is in location Top floor top left
+No subject was found for class it in location Top floor top left
+No subject was found for class iu in location Top floor top left
+No subject was found for class iv in location Top floor top left
+No subject was found for class iw in location Top floor top left
+No subject was found for class ix in location Top floor top left
+No subject was found for class iy in location Top floor top left
+No subject was found for class iz in location Top floor top left
+Subject politics happens on class j which is located in Top floor top left
+Subject politics happens on class ja which is located in Top floor top left
+Subject politics happens on class jb which is located in Top floor top left
+Subject politics happens on class jc which is located in Top floor top left
+Subject politics happens on class jd which is located in Top floor top left
+Subject politics happens on class je which is located in Top floor top left
+Subject politics happens on class jf which is located in Top floor top left
+Subject politics happens on class jg which is located in Top floor top left
+Subject politics happens on class jh which is located in Top floor top left
+Subject politics happens on class ji which is located in Top floor top left
+Subject politics happens on class jj which is located in Top floor top left
+Subject politics happens on class jk which is located in Top floor top left
+Subject politics happens on class jl which is located in Top floor top left
+Subject politics happens on class jm which is located in Top floor top left
+Subject politics happens on class jn which is located in Top floor top left
+Subject politics happens on class jo which is located in Top floor top left
+Subject politics happens on class jp which is located in Top floor top left
+Subject politics happens on class jq which is located in Top floor top left
+Subject politics happens on class jr which is located in Top floor top left
+Subject politics happens on class js which is located in Top floor top left
+Subject politics happens on class jt which is located in Top floor top left
+Subject politics happens on class ju which is located in Top floor top left
+Subject politics happens on class jv which is located in Top floor top left
+Subject politics happens on class jw which is located in Top floor top left
+Subject international law, politics happens on class jx which is located in Top floor top left
+Subject education happens on class l which is located in Top floor top left
+No subject was found for class la in location Top floor top left
+No subject was found for class lb in location Top floor top left
+No subject was found for class lc in location Top floor top left
+No subject was found for class ld in location Top floor top left
+No subject was found for class le in location Top floor top left
+No subject was found for class lf in location Top floor top left
+No subject was found for class lg in location Top floor top left
+No subject was found for class lh in location Top floor top left
+No subject was found for class li in location Top floor top left
+No subject was found for class lj in location Top floor top left
+No subject was found for class lk in location Top floor top left
+No subject was found for class ll in location Top floor top left
+No subject was found for class lm in location Top floor top left
+No subject was found for class ln in location Top floor top left
+No subject was found for class lo in location Top floor top left
+No subject was found for class lp in location Top floor top left
+No subject was found for class lq in location Top floor top left
+No subject was found for class lr in location Top floor top left
+No subject was found for class ls in location Top floor top left
+No subject was found for class lt in location Top floor top left
+No subject was found for class lu in location Top floor top left
+No subject was found for class lv in location Top floor top left
+No subject was found for class lw in location Top floor top left
+No subject was found for class lx in location Top floor top left
+No subject was found for class ly in location Top floor top left
+No subject was found for class lz in location Top floor top left
+No subject was found for class m in location Top floor top left
+No subject was found for class ma in location Top floor top left
+No subject was found for class mb in location Top floor top left
+No subject was found for class mc in location Top floor top left
+No subject was found for class md in location Top floor top left
+No subject was found for class me in location Top floor top left
+No subject was found for class mf in location Top floor top left
+No subject was found for class mg in location Top floor top left
+No subject was found for class mh in location Top floor top left
+No subject was found for class mi in location Top floor top left
+No subject was found for class mj in location Top floor top left
+No subject was found for class mk in location Top floor top left
+Subject music technology happens on class ml which is located in Top floor top left
+No subject was found for class mm in location Top floor top left
+No subject was found for class mn in location Top floor top left
+No subject was found for class mo in location Top floor top left
+No subject was found for class mp in location Top floor top left
+No subject was found for class mq in location Top floor top left
+No subject was found for class mr in location Top floor top left
+No subject was found for class ms in location Top floor top left
+Subject music technology happens on class mt which is located in Top floor top left
+No subject was found for class mu in location Top floor top left
+No subject was found for class mv in location Top floor top left
+No subject was found for class mw in location Top floor top left
+No subject was found for class mx in location Top floor top left
+No subject was found for class my in location Top floor top left
+No subject was found for class mz in location Top floor top left
+Subject art happens on class n which is located in Top floor top left
+No subject was found for class na in location Top floor top left
+No subject was found for class nb in location Top floor top left
+No subject was found for class nc in location Top floor top left
+No subject was found for class nd in location Top floor top left
+No subject was found for class ne in location Top floor top left
+No subject was found for class nf in location Top floor top left
+No subject was found for class ng in location Top floor top left
+No subject was found for class nh in location Top floor top left
+No subject was found for class ni in location Top floor top left
+No subject was found for class nj in location Top floor top left
+No subject was found for class nk in location Top floor top left
+No subject was found for class nl in location Top floor top left
+No subject was found for class nm in location Top floor top left
+No subject was found for class nn in location Top floor top left
+No subject was found for class no in location Top floor top left
+No subject was found for class np in location Top floor top left
+No subject was found for class nq in location Top floor top left
+No subject was found for class nr in location Top floor top left
+No subject was found for class ns in location Top floor top left
+No subject was found for class nt in location Top floor top left
+No subject was found for class nu in location Top floor top left
+No subject was found for class nv in location Top floor top left
+No subject was found for class nw in location Top floor top left
+No subject was found for class nx in location Top floor top left
+
+===== INPUT: '3\n5\n'
+------------------Hello There!!----------------------
+We'll be providing you your classmark together with its locations and subject name(s)
+-------------------------------------------------------
+Please select one of the option below by typing your desired option number
+1. Enter a subject name or part-name
+2. Enter a classmark
+3. Enter a location
+Your choice here:Please Select a NUMBER from all available locations:
+1. Top floor bottom left
+2. Top floor top left
+3. Top floor top right
+4. Top floor bottom right
+5. Middle floor
+6. Bottom floor
+Enter the location:Thank you for answering, There are some classes and subjects taught in location Middle floor
+No subject was found for class a in location Middle floor
+No subject was found for class aa in location Middle floor
+No subject was found for class ab in location Middle floor
+No subject was found for class ac in location Middle floor
+No subject was found for class ad in location Middle floor
+No subject was found for class ae in location Middle floor
+No subject was found for class af in location Middle floor
+No subject was found for class ag in location Middle floor
+No subject was found for class ah in location Middle floor
+No subject was found for class ai in location Middle floor
+No subject was found for class aj in location Middle floor
+No subject was found for class ak in location Middle floor
+No subject was found for class al in location Middle floor
+No subject was found for class am in location Middle floor
+No subject was found for class an in location Middle floor
+No subject was found for class ao in location Middle floor
+No subject was found for class ap in location Middle floor
+No subject was found for class aq in location Middle floor
+No subject was found for class ar in location Middle floor
+No subject was found for class as in location Middle floor
+No subject was found for class at in location Middle floor
+No subject was found for class au in location Middle floor
+No subject was found for class av in location Middle floor
+No subject was found for class aw in location Middle floor
+No subject was found for class ax in location Middle floor
+No subject was found for class ay in location Middle floor
+No subject was found for class az in location Middle floor
+Subject philosophy happens on class b which is located in Middle floor
+Subject philosophy happens on class ba which is located in Middle floor
+Subject philosophy happens on class bb which is located in Middle floor
+Subject philosophy happens on class bc which is located in Middle floor
+Subject philosophy happens on class bd which is located in Middle floor
+Subject philosophy happens on class be which is located in Middle floor
+Subject philosophy, psychology happens on class bf which is located in Middle floor
+Subject philosophy happens on class bg which is located in Middle floor
+Subject philosophy happens on class bh which is located in Middle floor
+Subject philosophy happens on class bi which is located in Middle floor
+Subject philosophy happens on class bj which is located in Middle floor
+No subject was found for class bk in location Middle floor
+Subject religion happens on class bl which is located in Middle floor
+Subject religion happens on class bm which is located in Middle floor
+Subject religion happens on class bn which is located in Middle floor
+Subject religion happens on class bo which is located in Middle floor
+Subject religion happens on class bp which is located in Middle floor
+Subject religion happens on class bq which is located in Middle floor
+Subject religion happens on class br which is located in Middle floor
+Subject religion happens on class bs which is located in Middle floor
+Subject religion happens on class bt which is located in Middle floor
+Subject religion happens on class bu which is located in Middle floor
+Subject religion happens on class bv which is located in Middle floor
+Subject religion happens on class bw which is located in Middle floor
+Subject religion happens on class bx which is located in Middle floor
+No subject was found for class by in location Middle floor
+No subject was found for class bz in location Middle floor
+No subject was found for class c in location Middle floor
+No subject was found for class ca in location Middle floor
+No subject was found for class cb in location Middle floor
+Subject archaeology happens on class cc which is located in Middle floor
+No subject was found for class cd in location Middle floor
+No subject was found for class ce in location Middle floor
+No subject was found for class cf in location Middle floor
+No subject was found for class cg in location Middle floor
+No subject was found for class ch in location Middle floor
+No subject was found for class ci in location Middle floor
+No subject was found for class cj in location Middle floor
+No subject was found for class ck in location Middle floor
+No subject was found for class cl in location Middle floor
+No subject was found for class cm in location Middle floor
+No subject was found for class cn in location Middle floor
+No subject was found for class co in location Middle floor
+No subject was found for class cp in location Middle floor
+No subject was found for class cq in location Middle floor
+No subject was found for class cr in location Middle floor
+No subject was found for class cs in location Middle floor
+No subject was found for class ct in location Middle floor
+No subject was found for class cu in location Middle floor
+No subject was found for class cv in location Middle floor
+No subject was found for class cw in location Middle floor
+No subject was found for class cx in location Middle floor
+No subject was found for class cy in location Middle floor
+No subject was found for class cz in location Middle floor
+Subject history happens on class d which is located in Middle floor
+Subject british history happens on class da which is located in Middle floor
+No subject was found for class db in location Middle floor
+No subject was found for class dc in location Middle floor
+No subject was found for class dd in location Middle floor
+No subject was found for class de in location Middle floor
+No subject was found for class df in location Middle floor
+No subject was found for class dg in location Middle floor
+No subject was found for class dh in location Middle floor
+No subject was found for class di in location Middle floor
+No subject was found for class dj in location Middle floor
+No subject was found for class dk in location Middle floor
+No subject was found for class dl in location Middle floor
+No subject was found for class dm in location Middle floor
+No subject was found for class dn in location Middle floor
+No subject was found for class do in location Middle floor
+No subject was found for class dp in location Middle floor
+No subject was found for class dq in location Middle floor
+No subject was found for class dr in location Middle floor
+No subject was found for class ds in location Middle floor
+
+===== INPUT: '3\n6\n'
+------------------Hello There!!----------------------
+We'll be providing you your classmark together with its locations and subject name(s)
+-------------------------------------------------------
+Please select one of the option below by typing your desired option number
+1. Enter a subject name or part-name
+2. Enter a classmark
+3. Enter a location
+Your choice here:Please Select a NUMBER from all available locations:
+1. Top floor bottom left
+2. Top floor top left
+3. Top floor top right
+4. Top floor bottom right
+5. Middle floor
+6. Bottom floor
+Enter the location:Thank you for answering, There are some classes and subjects taught in location Bottom floor
+Subject international law, politics happens on class jx which is located in Bottom floor
+No subject was found for class jy in location Bottom floor
+Subject international relations happens on class jz which is located in Bottom floor
+Subject law happens on class k which is located in Bottom floor
+No subject was found for class ka in location Bottom floor
+No subject was found for class kb in location Bottom floor
+No subject was found for class kc in location Bottom floor
+No subject was found for class kd in location Bottom floor
+No subject was found for class ke in location Bottom floor
+No subject was found for class kf in location Bottom floor
+No subject was found for class kg in location Bottom floor
+No subject was found for class kh in location Bottom floor
+No subject was found for class ki in location Bottom floor
+No subject was found for class kj in location Bottom floor
+No subject was found for class kk in location Bottom floor
+No subject was found for class kl in location Bottom floor
+No subject was found for class km in location Bottom floor
+No subject was found for class kn in location Bottom floor
+No subject was found for class ko in location Bottom floor
+No subject was found for class kp in location Bottom floor
+No subject was found for class kq in location Bottom floor
+No subject was found for class kr in location Bottom floor
+No subject was found for class ks in location Bottom floor
+No subject was found for class kt in location Bottom floor
+No subject was found for class ku in location Bottom floor
+No subject was found for class kv in location Bottom floor
+No subject was found for class kw in location Bottom floor
+No subject was found for class kx in location Bottom floor
+No subject was found for class ky in location Bottom floor
+No subject was found for class kz in location Bottom floor
+
+===== INPUT: '3\n99\n'
+------------------Hello There!!----------------------
+We'll be providing you your classmark together with its locations and subject name(s)
+-------------------------------------------------------
+Please select one of the option below by typing your desired option number
+1. Enter a subject name or part-name
+2. Enter a classmark
+3. Enter a location
+Your choice here:Please Select a NUMBER from all available locations:
+1. Top floor bottom left
+2. Top floor top left
+3. Top floor top right
+4. Top floor bottom right
+5. Middle floor
+6. Bottom floor
+Enter the location:Thank you for answering, but no class, subject or location was found for your search 99
+
+===== INPUT: '3\n0\n'
+------------------Hello There!!----------------------
+We'll be providing you your classmark together with its locations and subject name(s)
+-------------------------------------------------------
+Please select one of the option below by typing your desired option number
+1. Enter a subject name or part-name
+2. Enter a classmark
+3. Enter a location
+Your choice here:Please Select a NUMBER from all available locations:
+1. Top floor bottom left
+2. Top floor top left
+3. Top floor top right
+4. Top floor bottom right
+5. Middle floor
+6. Bottom floor
+Enter the location:Thank you for answering, but no class, subject or location was found for your search 0
+
+===== INPUT: '3\nabc\n'
+------------------Hello There!!----------------------
+We'll be providing you your classmark together with its locations and subject name(s)
+-------------------------------------------------------
+Please select one of the option below by typing your desired option number
+1. Enter a subject name or part-name
+2. Enter a classmark
+3. Enter a location
+Your choice here:Please Select a NUMBER from all available locations:
+1. Top floor bottom left
+2. Top floor top left
+3. Top floor top right
+4. Top floor bottom right
+5. Middle floor
+6. Bottom floor
+Enter the location:----------Error: Invalid value type. Try from the beginning.-------
+
+===== INPUT: '4\n'
+------------------Hello There!!----------------------
+We'll be providing you your classmark together with its locations and subject name(s)
+-------------------------------------------------------
+Please select one of the option below by typing your desired option number
+1. Enter a subject name or part-name
+2. Enter a classmark
+3. Enter a location
+Your choice here:----------Error: Please choose a number between 1 and 3. Try from the beginning.-------
+
+===== INPUT: '0\n'
+------------------Hello There!!----------------------
+We'll be providing you your classmark together with its locations and subject name(s)
+-------------------------------------------------------
+Please select one of the option below by typing your desired option number
+1. Enter a subject name or part-name
+2. Enter a classmark
+3. Enter a location
+Your choice here:----------Error: Please choose a number between 1 and 3. Try from the beginning.-------
+
+===== INPUT: '-1\n'
+------------------Hello There!!----------------------
+We'll be providing you your classmark together with its locations and subject name(s)
+-------------------------------------------------------
+Please select one of the option below by typing your desired option number
+1. Enter a subject name or part-name
+2. Enter a classmark
+3. Enter a location
+Your choice here:----------Error: Please choose a number between 1 and 3. Try from the beginning.-------
+
+===== INPUT: 'abc\n'
+------------------Hello There!!----------------------
+We'll be providing you your classmark together with its locations and subject name(s)
+-------------------------------------------------------
+Please select one of the option below by typing your desired option number
+1. Enter a subject name or part-name
+2. Enter a classmark
+3. Enter a location
+Your choice here:----------Error: Invalid value type. Try from the beginning.-------
+
+===== INPUT: '2.5\n'
+------------------Hello There!!----------------------
+We'll be providing you your classmark together with its locations and subject name(s)
+-------------------------------------------------------
+Please select one of the option below by typing your desired option number
+1. Enter a subject name or part-name
+2. Enter a classmark
+3. Enter a location
+Your choice here:----------Error: Invalid value type. Try from the beginning.-------
+
+===== INPUT: ''
+------------------Hello There!!----------------------
+We'll be providing you your classmark together with its locations and subject name(s)
+-------------------------------------------------------
+Please select one of the option below by typing your desired option number
+1. Enter a subject name or part-name
+2. Enter a classmark
+3. Enter a location
+Your choice here:<<TRACEBACK: EOFError>>

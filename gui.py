@@ -1,6 +1,8 @@
 from tkinter import *
 import time
-import csv_func, helper_func
+import csv_func, location_available
+from engine import dataset, query
+from render import gui as render_gui
 
 # setting up root
 root = Tk()
@@ -47,13 +49,12 @@ locationOption4 = Checkbutton(root, text="Top floor bottom right", variable=sele
 locationOption5 = Checkbutton(root, text="Middle floor", variable=selectedLocation, onvalue="5", offvalue="")
 locationOption6 = Checkbutton(root, text="Bottom floor", variable=selectedLocation, onvalue="6", offvalue="")
 
-# reading of dats in CSV
-location_and_classmark = csv_func.read_csv('classmark_location.csv') 
-subject_and_classmark = csv_func.read_csv('subject_classmark.csv') 
+# making sure both CSV files exist, then loading them
+csv_func.ensure_csv_files()
+classmarkData = dataset.load_dataset()
 
-# changing CSV values for usability purpose
-findLocationByClassmark = helper_func.list_to_dictionary_csv(location_and_classmark)
-findClassmarkBySubject = helper_func.list_to_dictionary_csv(subject_and_classmark)
+# the widgets a result gets drawn onto, handed to the renderer
+resultWidgets = {"searchResult": searchResult, "listbox": listbox, "end": END}
 
 # function to implement loader before any result
 def wait_and_search(message):
@@ -179,38 +180,16 @@ def show_searches():
                 displaying output based on user's choice
             """
             if selectedOption.get() == "1":
-                # passing props with values to display  
-                propsDict = {
-                    "searchResult":searchResult,
-                    "listbox":listbox,
-                    "end":END,
-                    "findClassmarkBySubject":findClassmarkBySubject,
-                    "findLocationByClassmark":findLocationByClassmark,
-                    "textToSearch":textReceived
-                }
-                helper_func.render_subject(True, propsDict)
+                render_gui.show_subject(query.find_by_subject(classmarkData, textReceived), resultWidgets)
                                
             if selectedOption.get() == "2":
-                # passing props with values to display  
-                propsDict = {
-                    "searchResult":searchResult,
-                    "findClassmarkBySubject":findClassmarkBySubject,
-                    "findLocationByClassmark":findLocationByClassmark,
-                    "textToSearch":textReceived
-                }
-                helper_func.render_classname(True, propsDict)
+                render_gui.show_classmark(query.find_by_classmark(classmarkData, textReceived), resultWidgets)
 
             if selectedOption.get() == "3":   
-                # passing props with values to display  
-                propsDict = {
-                    "searchResult":searchResult,
-                    "listbox":listbox,
-                    "end":END,
-                    "findClassmarkBySubject":findClassmarkBySubject,
-                    "findLocationByClassmark":findLocationByClassmark,
-                    "selectedLocation":selectedLocation
-                }
-                helper_func.render_location(True, propsDict)
+                render_gui.show_location(
+                    query.find_by_location(classmarkData, int(selectedLocation.get()), location_available.location_options),
+                    resultWidgets,
+                )
     else:
         # error handling by showing error message
         errorMessage.config(text="nothing to search")
