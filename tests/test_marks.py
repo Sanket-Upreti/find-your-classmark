@@ -1,9 +1,10 @@
 """ 
-    checks on the mark sheet reading and the lookup page
+    checks on the mark sheet reading, the lookup page and the per-student links
 
     run it with: python3 tests/test_marks.py
 """
 import os
+import re
 import shutil
 import sys
 import tempfile
@@ -15,6 +16,7 @@ import uuid
 
 sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
+from marks import links
 from marks import loaders
 from marks import sheet as sheet_module
 from marks import web
@@ -48,10 +50,32 @@ def write_csv(contents=SHEET_CSV, name="results.csv"):
         handle.write(contents)
     return path
 
-# only the results part of the page, so a stray number in the stylesheet can't fool a check
+""" 
+    only the marks table itself, so neither a number in the stylesheet nor two
+    digits that happen to fall inside a link token can fool a check
+"""
 def results_section(markup):
     marker = "<h2>Your marks</h2>"
-    return markup.split(marker, 1)[1] if marker in markup else ""
+    if marker not in markup:
+        return ""
+    return markup.split(marker, 1)[1].split("</table>", 1)[0]
+
+SHEET_ADDRESS = re.compile(r"/sheet/([0-9a-f]{16})")
+STUDENT_ADDRESS = re.compile(r"/s/([0-9a-f]{%d})" % links.TOKEN_LENGTH)
+
+# the id an upload put the sheet under, read back off the page it landed on
+def sheet_id(markup):
+    found = SHEET_ADDRESS.search(markup)
+    assert found, "the page that came back is not a sheet page"
+    return found.group(1)
+
+# every student link on a page, in the order they appear, without repeats
+def student_tokens(markup):
+    seen = []
+    for token in STUDENT_ADDRESS.findall(markup):
+        if token not in seen:
+            seen.append(token)
+    return seen
 
 def load_sheet(contents=SHEET_CSV):
     path = write_csv(contents)
@@ -101,6 +125,10 @@ class Serving:
                 return response.status, response.read().decode("utf-8")
         except urllib.error.HTTPError as error:
             return error.code, error.read().decode("utf-8")
+
+    # asking for one student through the sheet's own lookup form
+    def lookup(self, sheetId, criteria):
+        return self.get(f"/sheet/{sheetId}/lookup?" + urllib.parse.urlencode(criteria))
 
 @check("who-columns are told apart from subject-columns")
 def _():
@@ -159,6 +187,225 @@ def _():
 def _():
     assert sheet_module.total_and_average([("Grade", "A")]) == (None, None)
 
+# ---------- the tokens behind the links ----------
+
+@check("a link token is unguessable and tied to one row of one sheet")
+def _():
+    secret = os.urandom(32)
+    first = links.student_token(secret, "aaaaaaaaaaaaaaaa", 0)
+    assert len(first) == links.TOKEN_LENGTH
+    # the same row always gives the same link, so a handed out address keeps working
+    assert first == links.student_token(secret, "aaaaaaaaaaaaaaaa", 0)
+    # a different row, a different sheet, or a different secret gives a different one
+    assert first != links.student_token(secret, "aaaaaaaaaaaaaaaa", 1)
+    assert first != links.student_token(secret, "bbbbbbbbbbbbbbbb", 0)
+    assert first != links.student_token(os.urandom(32), "aaaaaaaaaaaaaaaa", 0)
+
+@check("the secret behind the links is made once and then reused")
+def _():
+    folder = tempfile.mkdtemp()
+    try:
+        first = links.read_secret(folder)
+        assert len(first) == 32
+        assert first == links.read_secret(folder)
+        assert oct(os.stat(os.path.join(folder, links.SECRET_NAME)).st_mode)[-3:] == "600"
+    finally:
+        shutil.rmtree(folder, ignore_errors=True)
+
+@check("a saved file carries its sheet id, and an unrelated name is ignored")
+def _():
+    assert web.split_saved(web.saved_name("0123456789abcdef", "my__marks.csv")) == \
+        ("0123456789abcdef", "my__marks.csv")
+    assert web.split_saved("results.csv") == (None, None)
+    assert web.split_saved("nothex__results.csv") == (None, None)
+
+# ---------- the pages ----------
+
+@check("the page asks for an upload before anything is loaded")
+def _():
+    with Serving() as serving:
+        status, markup = serving.get("/")
+        assert status == 200 and "Upload" in markup and 'type="file"' in markup
+
+@check("uploading a sheet leads to a page of links")
+def _():
+    with Serving() as serving:
+        status, markup = serving.upload()
+        assert status == 200
+        assert "3 student(s)" in markup
+        for column in ["roll", "name", "class", "section"]:
+            assert f'name="{column}"' in markup
+        # one link for every student, all different
+        assert len(student_tokens(markup)) == 3
+
+@check("a student's own link shows their own marks")
+def _():
+    with Serving() as serving:
+        markup = serving.upload()[1]
+        tokens = student_tokens(markup)
+        results = results_section(serving.get(f"/s/{tokens[0]}")[1])
+        assert "72" in results and "65" in results and "80" in results
+        assert "Total" in results and "217" in results
+
+@check("a student's own link shows nobody else, and no way to reach them")
+def _():
+    with Serving() as serving:
+        markup = serving.upload()[1]
+        tokens = student_tokens(markup)
+        status, theirs = serving.get(f"/s/{tokens[0]}")
+        assert status == 200
+        assert "Mokshada" not in theirs
+        results = results_section(theirs)
+        assert "81" not in results and "90" not in results and "77" not in results
+        # nothing on the page walks back up to the sheet that holds everyone
+        assert "/sheet/" not in theirs
+        assert not [token for token in student_tokens(theirs) if token != tokens[0]]
+
+@check("a made up link is not found")
+def _():
+    with Serving() as serving:
+        serving.upload()
+        assert serving.get("/s/" + "0" * links.TOKEN_LENGTH)[0] == 404
+
+@check("a second upload does not replace the first")
+def _():
+    with Serving() as serving:
+        first = sheet_id(serving.upload()[1])
+        second = sheet_id(serving.upload("roll,name,Maths\n99,Other,40\n", "other.csv")[1])
+        assert first != second
+        assert "3 student(s)" in serving.get(f"/sheet/{first}")[1]
+        assert "1 student(s)" in serving.get(f"/sheet/{second}")[1]
+
+@check("the links handed out keep working after a restart")
+def _():
+    with Serving() as serving:
+        markup = serving.upload()[1]
+        sheetId = sheet_id(markup)
+        before = student_tokens(markup)
+        # a brand new store reading the same folder, the way a restart does
+        restarted = web.Store()
+        assert restarted.load_saved() == 1
+        after = [restarted.token_for(sheetId, position) for position in range(3)]
+        assert before == after
+        assert restarted.student(before[0])[1] is not None
+
+@check("an unknown sheet address is not found")
+def _():
+    with Serving() as serving:
+        serving.upload()
+        assert serving.get("/sheet/" + "0" * 16)[0] == 404
+
+@check("a file type that isn't read is refused with an explanation")
+def _():
+    with Serving() as serving:
+        status, markup = serving.upload("nonsense", "results.pdf")
+        assert status == 400
+        assert ".csv" in markup and ".xlsx" in markup
+
+@check("a student is found through the sheet's own lookup form")
+def _():
+    with Serving() as serving:
+        sheetId = sheet_id(serving.upload()[1])
+        results = results_section(serving.lookup(
+            sheetId, {"roll": "13", "name": "", "class": "", "section": ""})[1])
+        assert "81" in results and "90" in results and "77" in results
+        assert "Total" in results and "248" in results
+
+@check("a lookup shows only the student that was asked for")
+def _():
+    with Serving() as serving:
+        sheetId = sheet_id(serving.upload()[1])
+        results = results_section(serving.lookup(
+            sheetId, {"roll": "12", "name": "", "class": "", "section": ""})[1])
+        assert "72" in results and "65" in results and "80" in results
+        assert "81" not in results and "90" not in results and "77" not in results
+
+@check("a sheet's own totals are shown once, not alongside worked out ones")
+def _():
+    with Serving() as serving:
+        sheetId = sheet_id(serving.upload(
+            "roll,name,Maths,Science,Total\n12,Sanket,72,65,137\n", "withtotal.csv")[1])
+        results = results_section(serving.lookup(sheetId, {"roll": "12", "name": ""})[1])
+        assert results.count("Total") == 1
+        assert "137" in results
+        # nothing is worked out on top of the sheet's own figures
+        assert "Average" not in results
+
+@check("a sheet with no totals of its own gets them worked out")
+def _():
+    with Serving() as serving:
+        sheetId = sheet_id(serving.upload(
+            "roll,name,Maths,Science\n12,Sanket,72,65\n", "plain.csv")[1])
+        results = results_section(serving.lookup(sheetId, {"roll": "12", "name": ""})[1])
+        assert "Total" in results and "137" in results
+        assert "Average" in results and "68.5" in results
+
+@check("an ambiguous match asks for more detail instead of showing marks")
+def _():
+    with Serving() as serving:
+        sheetId = sheet_id(serving.upload()[1])
+        markup = serving.lookup(
+            sheetId, {"roll": "", "name": "Sanket", "class": "", "section": ""})[1]
+        assert "2 students match" in markup
+        # no marks table at all, so neither student's results are shown
+        assert results_section(markup) == ""
+
+@check("an unknown student is told so")
+def _():
+    with Serving() as serving:
+        sheetId = sheet_id(serving.upload()[1])
+        markup = serving.lookup(
+            sheetId, {"roll": "99", "name": "", "class": "", "section": ""})[1]
+        assert "No student found" in markup
+
+@check("submitting an empty form asks for something to go on")
+def _():
+    with Serving() as serving:
+        sheetId = sheet_id(serving.upload()[1])
+        markup = serving.lookup(sheetId, {"roll": "", "name": "", "class": "", "section": ""})[1]
+        assert "at least one box" in markup
+
+@check("an empty sheet is refused, and leaves nothing behind")
+def _():
+    with Serving() as serving:
+        status, markup = serving.upload("roll,name,Maths\n", "empty.csv")
+        assert status == 400 and "no students" in markup
+        assert serving.store.sheets == {} and serving.store.students == {}
+        assert [name for name in os.listdir(serving.uploads) if name.endswith(".csv")] == []
+
+@check("an uploaded name cannot escape the uploads folder")
+def _():
+    assert web.safe_name("../../etc/passwd") == "passwd"
+    assert web.safe_name("") == "sheet.csv"
+    assert "/" not in web.safe_name("a/b/c.csv")
+
+@check("a name containing html is escaped on the page")
+def _():
+    with Serving() as serving:
+        sheetId = sheet_id(serving.upload()[1])
+        markup = serving.lookup(
+            sheetId, {"roll": "<script>alert(1)</script>", "name": "", "class": "", "section": ""})[1]
+        assert "<script>alert(1)</script>" not in markup
+        assert "&lt;script&gt;" in markup
+
+@check("a host header cannot smuggle markup into a link")
+def _():
+    with Serving() as serving:
+        sheetId = sheet_id(serving.upload()[1])
+        request = urllib.request.Request(f"{serving.base}/sheet/{sheetId}")
+        request.add_header("Host", '127.0.0.1"><script>alert(1)</script>')
+        with urllib.request.urlopen(request) as response:
+            markup = response.read().decode("utf-8")
+        assert "<script>alert(1)</script>" not in markup
+
+@check("an unknown address gives a 404, not a traceback")
+def _():
+    with Serving() as serving:
+        serving.upload()
+        assert serving.get("/nope")[0] == 404
+
+# ---------- excel ----------
+
 # building a real .xlsx on the fly, the way a school would export one
 def write_xlsx(rows, name="results.xlsx"):
     import openpyxl
@@ -188,127 +435,19 @@ def _():
     path = write_xlsx([["roll", "Maths"], [12, 72], [None, None], [None, None]])
     assert len(loaders.load_table(path).rows) == 1
 
-@check("an excel sheet can be uploaded and looked up through the page")
+@check("an excel sheet can be uploaded and handed out as links")
 def _():
     needs_openpyxl()
     path = write_xlsx([["roll", "name", "Maths", "Science"], [12, "Sanket", 72, 65]])
     with open(path, "rb") as workbook:
         contents = workbook.read()
     with Serving() as serving:
-        assert serving.upload_bytes(contents, "results.xlsx")[0] == 200
-        results = results_section(serving.get("/lookup?" + urllib.parse.urlencode(
-            {"roll": "12", "name": ""}))[1])
+        status, markup = serving.upload_bytes(contents, "results.xlsx")
+        assert status == 200
+        tokens = student_tokens(markup)
+        assert len(tokens) == 1
+        results = results_section(serving.get(f"/s/{tokens[0]}")[1])
         assert "72" in results and "65" in results and "137" in results
-
-@check("a file type that isn't read is refused with an explanation")
-def _():
-    with Serving() as serving:
-        status, markup = serving.upload("nonsense", "results.pdf")
-        assert status == 400
-        assert ".csv" in markup and ".xlsx" in markup
-
-@check("the page asks for an upload before anything is loaded")
-def _():
-    with Serving() as serving:
-        status, markup = serving.get("/")
-        assert status == 200 and "Upload" in markup and 'type="file"' in markup
-
-@check("uploading a sheet leads to the lookup form")
-def _():
-    with Serving() as serving:
-        assert serving.upload()[0] == 200
-        markup = serving.get("/")[1]
-        assert "3 student(s)" in markup
-        for column in ["roll", "name", "class", "section"]:
-            assert f'name="{column}"' in markup
-
-@check("a student sees their own marks and their total")
-def _():
-    with Serving() as serving:
-        serving.upload()
-        results = results_section(serving.get("/lookup?" + urllib.parse.urlencode(
-            {"roll": "13", "name": "", "class": "", "section": ""}))[1])
-        assert "81" in results and "90" in results and "77" in results
-        assert "Total" in results and "248" in results
-
-@check("a student does not see anyone else's marks")
-def _():
-    with Serving() as serving:
-        serving.upload()
-        results = results_section(serving.get("/lookup?" + urllib.parse.urlencode(
-            {"roll": "12", "name": "", "class": "", "section": ""}))[1])
-        assert "72" in results and "65" in results and "80" in results
-        assert "81" not in results and "90" not in results and "77" not in results
-
-@check("a sheet's own totals are shown once, not alongside worked out ones")
-def _():
-    with Serving() as serving:
-        serving.upload("roll,name,Maths,Science,Total\n12,Sanket,72,65,137\n", "withtotal.csv")
-        results = results_section(serving.get("/lookup?roll=12&name=")[1])
-        assert results.count("Total") == 1
-        assert "137" in results
-        # nothing is worked out on top of the sheet's own figures
-        assert "Average" not in results
-
-@check("a sheet with no totals of its own gets them worked out")
-def _():
-    with Serving() as serving:
-        serving.upload("roll,name,Maths,Science\n12,Sanket,72,65\n", "plain.csv")
-        results = results_section(serving.get("/lookup?roll=12&name=")[1])
-        assert "Total" in results and "137" in results
-        assert "Average" in results and "68.5" in results
-
-@check("an ambiguous match asks for more detail instead of showing marks")
-def _():
-    with Serving() as serving:
-        serving.upload()
-        markup = serving.get("/lookup?" + urllib.parse.urlencode(
-            {"roll": "", "name": "Sanket", "class": "", "section": ""}))[1]
-        assert "2 students match" in markup
-        # no marks table at all, so neither student's results are shown
-        assert results_section(markup) == ""
-
-@check("an unknown student is told so")
-def _():
-    with Serving() as serving:
-        serving.upload()
-        markup = serving.get("/lookup?" + urllib.parse.urlencode(
-            {"roll": "99", "name": "", "class": "", "section": ""}))[1]
-        assert "No student found" in markup
-
-@check("submitting an empty form asks for something to go on")
-def _():
-    with Serving() as serving:
-        serving.upload()
-        markup = serving.get("/lookup?roll=&name=&class=&section=")[1]
-        assert "at least one box" in markup
-
-@check("an empty sheet is refused")
-def _():
-    with Serving() as serving:
-        status, markup = serving.upload("roll,name,Maths\n", "empty.csv")
-        assert status == 400 and "no students" in markup
-
-@check("an uploaded name cannot escape the uploads folder")
-def _():
-    assert web.safe_name("../../etc/passwd") == "passwd"
-    assert web.safe_name("") == "sheet.csv"
-    assert "/" not in web.safe_name("a/b/c.csv")
-
-@check("a name containing html is escaped on the page")
-def _():
-    with Serving() as serving:
-        serving.upload()
-        markup = serving.get("/lookup?" + urllib.parse.urlencode(
-            {"roll": "<script>alert(1)</script>", "name": "", "class": "", "section": ""}))[1]
-        assert "<script>alert(1)</script>" not in markup
-        assert "&lt;script&gt;" in markup
-
-@check("an unknown address gives a 404, not a traceback")
-def _():
-    with Serving() as serving:
-        serving.upload()
-        assert serving.get("/nope")[0] == 404
 
 @check("without openpyxl, an excel upload is refused with an install hint")
 def _():
