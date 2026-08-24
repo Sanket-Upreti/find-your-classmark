@@ -1,10 +1,12 @@
-# Find your marks
+# Marks
 
-A small web page for handing out marks. Upload a class mark sheet, get one
-link per student, and give each student theirs. Their link shows their own row
-and nothing else.
+A small web app for handing out results. An organisation uploads a mark sheet
+and gets one invite link per student. A student opens their invite, sets a
+password, and from then on signs in to see their own marks — and only their
+own — on every sheet that organisation publishes.
 
-Python 3.10 or newer. CSV needs nothing installed. Excel needs `openpyxl`.
+Python 3.10 or newer, standard library only. CSV needs nothing installed;
+Excel needs `openpyxl`.
 
 ## Running it
 
@@ -24,9 +26,37 @@ python3 -m venv .venv
 Without it, CSV still works and an Excel upload is refused with a message
 saying what to install.
 
-## The sheet
+## How it fits together
 
-One row per student, one column per subject:
+**Create an organisation.** Whoever does this becomes its teacher and gets a
+join code — something like `K4BU-A2FH`, safe to write on a board.
+
+**Upload a mark sheet.** One row per student, one column per subject. The app
+works out which column identifies a student (a roll or admission number if
+there is one, otherwise the first identity column) and gives every row an
+invite link of its own.
+
+**Hand out the invites.** An invite shows that student's marks and offers them
+a password. Holding the link is the proof of who they are — which is why the
+teacher hands them out individually rather than posting one address.
+
+**After that they just sign in** with the join code, their roll number and
+their password. They see their row on every sheet the organisation has
+uploaded, including ones added later.
+
+## Two kinds of address
+
+```
+/teacher/sheet/<id>     every student on one sheet — teacher only
+/s/<token>              one student's invite — hand these out
+/me                     a signed-in student's own marks
+```
+
+`/teacher/...` needs a teacher signed in, and a sheet belonging to another
+organisation is simply not there. `/s/<token>` needs no account: the token is
+80 bits of unguessable text.
+
+## The sheet
 
 ```csv
 roll,name,class,section,Maths,Science,English
@@ -45,64 +75,64 @@ Excel is read from the first worksheet, and a formula such as `=SUM(E2:G2)`
 arrives as the number it worked out — as long as the file was saved by a
 spreadsheet program, which is what stores that number in the file.
 
-## Two kinds of address
-
-Uploading a sheet lands you on its own page at `/sheet/<id>`, which lists
-every student together with a link of their own:
-
-```
-12 Sanket 10 A      http://…/s/7036e3c6a24eb29fc1c7
-13 Mokshada 10 A    http://…/s/dca1b0892af83e760e87
-14 Priya 10 B       http://…/s/cf03ceb7012cceb6d3f5
-```
-
-**Keep the `/sheet/<id>` address to yourself.** It shows the whole class.
-**Hand out the `/s/<token>` links.** Each one shows a single row, and carries
-no way to reach the sheet or any other student.
-
-Each sheet is held separately, so uploading a second one does not disturb the
-first, and links already handed out keep working.
-
-A student's link is worked out from a secret kept in `uploads/.link-secret`,
-not stored per student, so the links survive a restart. Delete that file and
-every link changes.
-
-There is also a lookup form on the sheet page for finding one student quickly.
-It is built from whatever identity columns your sheet has — fill in as many
-boxes as you need, since empty boxes are ignored, so a roll number on its own
-works and so does a name with a class and a section. Matching ignores case and
-surrounding spaces. If more than one student matches, no marks are shown and
-the page asks for more detail.
-
-## Totals
-
 If your sheet already has a `Total` or `Percentage` column, its figures are
 shown as they are and nothing is added on top. If it has none, a total and an
 average are worked out from the marks that are numbers; a column holding a
 grade or a remark is left out of both.
 
+Accounts are remembered against **(organisation, roll number)**, not against a
+row in one file. Next term's upload therefore appears for students who signed
+up last term, with no re-enrolment — as long as their roll number has not
+changed.
+
+## What is kept, and where
+
+Everything lives under `uploads/`, which is gitignored so real student data is
+never committed:
+
+```
+uploads/
+  marks.db          organisations, teachers, students, which sheet is whose
+  .link-secret      the secret invites are derived from (mode 600)
+  <id>__sheet.csv   the uploaded sheets themselves
+```
+
+Passwords are stored as scrypt hashes with a per-password salt, never as
+text. Sessions are a signed cookie — `HttpOnly`, `SameSite=Lax` — carrying who
+you are and when that stops being true.
+
 ## A note on privacy
 
-A student's link is 80 bits of unguessable text, so it cannot be found by
-trying. It is still a link: whoever holds it sees those marks, so it is only
-as private as the way you send it.
+This is a real access boundary, and it is worth being clear about its edges.
 
-There is no login, and no attempt to prove who is opening a link. Uploaded
-sheets are written unencrypted to `uploads/`, which is gitignored so real
-student data is never committed. The server speaks plain HTTP and listens on
-`127.0.0.1`; putting it anywhere public means putting HTTPS in front of it.
+- **Invites are links.** Whoever holds one sees those marks. They cannot be
+  guessed, but they can be forwarded. Send each one to one person.
+- **The first person to open an invite claims that account.** After that the
+  link says so and refuses. So hand invites out promptly.
+- **Signing out clears the cookie but does not invalidate it**, because
+  sessions are self-contained rather than stored. A cookie copied off a
+  machine stays usable until it expires.
+- **This serves plain HTTP and listens on `127.0.0.1`.** Over a network,
+  passwords and invite tokens would travel in the clear. Anywhere public needs
+  HTTPS in front of it, and the session cookie should then be marked `Secure`.
+
+There is no password reset. If a student forgets theirs, remove their row from
+`students` in `marks.db` and send them a fresh invite.
 
 ## Layout
 
 ```
 marks/
-  loaders.py   reads a CSV, Excel or markdown file into a Table
-  table.py     rows as {column: [values]}
-  sheet.py     tells who-columns from subject-columns, finds a student
-  links.py     the unguessable part of a per-student link
-  web.py       the upload page, the sheet page, and one page per student
+  loaders.py    reads a CSV, Excel or markdown file into a Table
+  table.py      rows as {column: [values]}
+  sheet.py      tells who-columns from subject-columns, finds a student
+  links.py      the unguessable part of an invite
+  accounts.py   passwords, sessions and join codes
+  database.py   organisations, teachers, students, sheets
+  web.py        the pages and who is allowed on them
 tests/
-  run_all.py   runs every suite
+  harness.py    a throwaway server and a browser that keeps its cookies
+  run_all.py    runs every suite
 ```
 
 ## Tests

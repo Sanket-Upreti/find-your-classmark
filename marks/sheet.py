@@ -72,6 +72,38 @@ class Sheet:
         return (f"Sheet({self.fileName!r}, students={len(self.rows)}, "
                 f"identity={self.identityColumns}, marks={self.markColumns})")
 
+"""
+    column names that pin down one particular student rather than a group of
+    them. this is the column a student's account is remembered against, so it
+    has to mean the same person on next term's sheet too
+"""
+KEY_HINTS = [
+    "rollno", "rollnumber", "roll", "rollno.", "admissionno", "admissionnumber",
+    "studentid", "id", "number", "no",
+]
+
+"""
+    the column a student is recognised by.
+
+    a roll or admission number is preferred because it is unique and stable; a
+    sheet without one falls back to its first identity column, which is usually
+    the name
+"""
+def key_column(sheet):
+    for hint in KEY_HINTS:
+        for column in sheet.identityColumns:
+            if normalise(column) == hint:
+                return column
+    return sheet.identityColumns[0] if sheet.identityColumns else ""
+
+# every row on the sheet whose key column holds this value
+def rows_for_key(sheet, column, value):
+    wanted = " ".join(str(value or "").split()).lower()
+    if not wanted or not column:
+        return []
+    return [row for row in sheet.rows
+            if " ".join(cell(row, column).split()).lower() == wanted]
+
 # building a sheet from a file already read by the loaders
 def from_table(table, fileName=""):
     return Sheet(table, fileName)
